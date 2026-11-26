@@ -28,7 +28,7 @@
   var CSS = `
 
 html {
-    scrollbar-gutter: stable;
+    overflow-y: auto;
 }
 
 .site {
