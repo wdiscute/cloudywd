@@ -26,7 +26,21 @@
 .site * {
     font-family: "Outfit", system-ui, sans-serif;
 }
-.site{border-bottom:1px solid rgba(190,220,255,.18);background:rgba(6,22,40,.45);backdrop-filter:blur(8px)}
+.site {
+    --focus: #7cc4ff;
+    --accent: #e8f4ff;
+    font-family: "Outfit", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: normal;
+    box-sizing: border-box;
+}
+
+.site *,
+.site *::before,
+.site *::after {
+    box-sizing: border-box;
+    font-family: "Outfit", system-ui, sans-serif;
+}
 .site .in{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
 .site .root{font-weight:700;font-size:1.2rem;color:#fff;text-decoration:none}
 .site .root:hover{color:#bfe0ff}
@@ -127,8 +141,17 @@
   }
   function init() { measure(); layout(); }
 
-  init();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(init);
-  if (window.ResizeObserver) new ResizeObserver(layout).observe(nav);
-  else window.addEventListener("resize", layout);
+if (document.fonts && document.fonts.load) {
+    document.fonts.load('500 16px "Outfit"').then(function () {
+        init();
+    });
+} else {
+    init();
+}
+
+if (window.ResizeObserver) {
+    new ResizeObserver(layout).observe(nav);
+} else {
+    window.addEventListener("resize", layout);
+}
 })();
