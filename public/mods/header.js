@@ -22,7 +22,10 @@
   ];
 
   var CSS = `
-.site{--focus:#7cc4ff;--accent:#e8f4ff;font-family:inherit}
+.site,
+.site * {
+    font-family: "Outfit", system-ui, sans-serif;
+}
 .site{border-bottom:1px solid rgba(190,220,255,.18);background:rgba(6,22,40,.45);backdrop-filter:blur(8px)}
 .site .in{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:nowrap}
 .site .root{font-weight:700;font-size:1.2rem;color:#fff;text-decoration:none}
@@ -57,6 +60,12 @@
   function isCurrent(m) {
     return norm(m.href) === (forced ? norm(forced) : path);
   }
+
+  // Load Outfit font
+  var font = document.createElement("link");
+  font.rel = "stylesheet";
+  font.href = "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap";
+  document.head.appendChild(font);
 
   var style = document.createElement("style");
   style.textContent = CSS;
