@@ -1,16 +1,12 @@
 export async function onRequest(context) {
-    // Let Cloudflare try to serve the requested page first
     const response = await context.next();
 
-    // Check whether the requested page exists
-    if (response.status === 404) {
-        // Redirect invalid URLs to /mods
-        return Response.redirect(
-            new URL("/mods", context.request.url),
-            302
-        );
-    }
+    const headers = new Headers(response.headers);
+    headers.set("X-Middleware-Test", "working");
 
-    // Existing pages work normally
-    return response;
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+    });
 }
