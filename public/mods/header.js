@@ -27,9 +27,7 @@
 
   var CSS = `
 
-html {
-    overflow-y: auto;
-}
+
 
 .site {
     --focus: #7cc4ff;
@@ -62,6 +60,7 @@ html {
     align-items: center;
     gap: 14px;
     flex-wrap: nowrap;
+    transform: translateX(calc((100vw - 100%) / 2));
 }
 
 .site .root {
