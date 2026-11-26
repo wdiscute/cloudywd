@@ -57,6 +57,9 @@ body {
 
 .site {
     flex: none;
+    /* Captured on its own during the page-to-page fade, so it stays still
+       while only the content below fades. */
+    view-transition-name: site-header;
 }
 
 .content {
@@ -410,7 +413,9 @@ body {
     layout();
   }
 
-  // Wait for Outfit before measuring navigation widths
+  // Fit the links right away so the first frame already looks right,
+  // then again once Outfit has loaded (its widths can differ slightly).
+  init();
   if (document.fonts && document.fonts.load) {
     document.fonts.load('500 16px "Outfit"')
       .then(init)

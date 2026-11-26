@@ -7,6 +7,7 @@
   --accent:#e8f4ff;--focus:#7cc4ff;
   --font:"Outfit",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
+@view-transition{navigation:auto} /* fade between pages instead of flashing */
 *{box-sizing:border-box;margin:0}
 body{
   font-family:var(--font);color:#e6f0fa;min-height:100vh;display:flex;flex-direction:column;
