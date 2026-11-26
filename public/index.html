@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hello, World!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #07070d;
@@ -19,7 +22,7 @@
     display: grid;
     place-items: center;
     overflow: hidden;
-    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-family: "Outfit", system-ui, -apple-system, sans-serif;
     position: relative;
   }
 
@@ -85,15 +88,25 @@
     font-size: clamp(2.5rem, 9vw, 6rem);
     font-weight: 800;
     letter-spacing: -0.02em;
+    filter: drop-shadow(0 0 18px rgba(255,255,255,.25));
+  }
+
+  /* "Hello, World!" links to the mods page.
+     The rainbow lives on the link (not the h1) so it stays in place when the link scales on hover. */
+  h1 a {
+    display: inline-block;
+    text-decoration: none;
     background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     animation: slide 5s linear infinite;
-    filter: drop-shadow(0 0 18px rgba(255,255,255,.25));
+    transition: transform .2s;
   }
   @keyframes slide { to { background-position: 300% 0; } }
+  h1 a:hover { transform: scale(1.04); }
+  h1 a:focus-visible { outline: 3px solid #fff; outline-offset: 6px; border-radius: 8px; }
 
   p {
     margin-top: 1rem;
@@ -129,7 +142,7 @@
 
   <main class="card">
     <div class="inner-mask"></div>
-    <h1>Hello, World!</h1>
+    <h1><a href="/mods/">Hello, World!</a></h1>
     <p>now with 16.7 million colors</p>
   </main>
 </body>

@@ -7,16 +7,22 @@
 <meta name="description" content="Minecraft mods by cloudywd.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--font:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root{--font:"Outfit",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 *{box-sizing:border-box;margin:0}
 body{font-family:var(--font);color:#e9ecf3;background:#0a0c11;min-height:100vh}
 :focus-visible{outline:3px solid #fff;outline-offset:4px}
 .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
-.intro{padding:88px 0 40px}
+.intro{padding-top:88px;padding-bottom:40px}
 .intro h1{font-size:clamp(3.5rem,12vw,8rem);line-height:.9;font-weight:800;letter-spacing:-.04em;color:#fff}
-.intro p{margin-top:20px;font-size:1.2rem;color:#9aa2b4}
+.profiles{margin-top:28px;display:flex;flex-wrap:wrap;gap:14px}
+.profiles a{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;justify-content:center;min-width:170px;min-height:60px;padding:12px 34px;font-size:1.1rem;font-weight:700;color:#fff;text-decoration:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:14px;transition:background .15s,border-color .15s,transform .15s}
+.profiles a:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.5);transform:translateY(-2px)}
+.profiles img{position:absolute;z-index:-1;left:-8px;bottom:-8px;width:52px;height:52px;object-fit:contain;opacity:.3;pointer-events:none;transition:opacity .15s;-webkit-mask-image:linear-gradient(to top right,#000 60%,transparent 100%);mask-image:linear-gradient(to top right,#000 60%,transparent 100%)}
+.profiles a:hover img{opacity:.5}
+.profiles a::after{content:"\2197";content:"\2197"/"";position:absolute;top:7px;right:10px;font-size:.8rem;line-height:1;opacity:.6;transition:opacity .15s}
+.profiles a:hover::after{opacity:1}
 .mod{position:relative;min-height:78vh;display:flex;align-items:center;border-top:1px solid #1b2030;
   background:radial-gradient(55% 70% at var(--gx,85%) 50%,color-mix(in srgb,var(--c) 16%,transparent),transparent 70%)}
 .mod:nth-of-type(even){--gx:15%}
@@ -24,8 +30,8 @@ body{font-family:var(--font);color:#e9ecf3;background:#0a0c11;min-height:100vh}
 .mod:nth-of-type(even) .txt{order:2}
 h2{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.95;font-weight:800;letter-spacing:-.035em;color:var(--c)}
 .txt p{margin-top:22px;max-width:26em;font-size:1.2rem;line-height:1.55;color:#aab1c2}
-.go{display:inline-block;margin-top:30px;font-size:1.25rem;font-weight:700;color:#fff;text-decoration:underline;text-decoration-color:var(--c);text-decoration-thickness:3px;text-underline-offset:7px;transition:text-decoration-thickness .15s,color .15s}
-.go:hover{color:var(--c);text-decoration-thickness:5px}
+h2 a{color:inherit;text-decoration:underline;text-decoration-color:transparent;text-decoration-thickness:4px;text-underline-offset:10px;transition:text-decoration-color .15s,filter .15s}
+h2 a:hover{text-decoration-color:currentColor;filter:brightness(1.15)}
 .shot{position:relative;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;border:2px dashed color-mix(in srgb,var(--c) 55%,transparent);border-radius:20px;color:color-mix(in srgb,var(--c) 70%,transparent);font-weight:500;overflow:hidden}
 .shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .7s ease}
 .shot img.on{opacity:1}
@@ -46,17 +52,21 @@ h2{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.95;font-weight:800;letter-spa
 </head>
 <body>
 <script src="/mods/header.js"></script>
+<div class="content">
 <main>
   <div class="wrap intro">
     <h1>Mods</h1>
-    <p>Minecraft mods by cloudywd.</p>
+    <nav class="profiles" aria-label="Profiles">
+      <a href="https://www.curseforge.com/members/wdiscute/projects" target="_blank" rel="noopener"><img src="/mods/icons/curseforge.png" alt="" onerror="this.remove()">CurseForge</a>
+      <a href="https://modrinth.com/user/wdiscute" target="_blank" rel="noopener"><img src="/mods/icons/modrinth.png" alt="" onerror="this.remove()">Modrinth</a>
+      <a href="https://github.com/wdiscute" target="_blank" rel="noopener"><img src="/mods/icons/github.png" alt="" onerror="this.remove()">GitHub</a>
+    </nav>
   </div>
   <section class="mod" style="--c:#5ec8ff">
     <div class="wrap">
     <div class="txt">
-      <h2>Starcatcher</h2>
+      <h2><a href="/mods/starcatcher/">Starcatcher</a></h2>
       <p>Placeholder description. Replace this with a short summary of what the mod adds and who it is for.</p>
-      <a class="go" href="/mods/starcatcher.html">View Starcatcher</a>
     </div>
     <div class="shot" data-mod="starcatcher"><span>Image</span></div>
     </div>
@@ -64,9 +74,8 @@ h2{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.95;font-weight:800;letter-spa
   <section class="mod" style="--c:#c7a6ff">
     <div class="wrap">
     <div class="txt">
-      <h2>Timeless Echoes</h2>
+      <h2><a href="/mods/timeless-echoes/">Timeless Echoes</a></h2>
       <p>Placeholder description. Replace this with a short summary of what the mod adds and who it is for.</p>
-      <a class="go" href="/mods/timeless-echoes.html">View Timeless Echoes</a>
     </div>
     <div class="shot" data-mod="timeless-echoes"><span>Image</span></div>
     </div>
@@ -74,9 +83,8 @@ h2{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.95;font-weight:800;letter-spa
   <section class="mod" style="--c:#ffc857">
     <div class="wrap">
     <div class="txt">
-      <h2>Fancy Tab Sections</h2>
+      <h2><a href="/mods/fancy-tab-sections/">Fancy Tab Sections</a></h2>
       <p>Placeholder description. Replace this with a short summary of what the mod adds and who it is for.</p>
-      <a class="go" href="/mods/fancy-tab-sections.html">View Fancy Tab Sections</a>
     </div>
     <div class="shot" data-mod="fancy-tab-sections"><span>Image</span></div>
     </div>
@@ -84,9 +92,8 @@ h2{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.95;font-weight:800;letter-spa
   <section class="mod" style="--c:#ff8a5b">
     <div class="wrap">
     <div class="txt">
-      <h2>Artisan Machines</h2>
+      <h2><a href="/mods/artisan-machines/">Artisan Machines</a></h2>
       <p>Placeholder description. Replace this with a short summary of what the mod adds and who it is for.</p>
-      <a class="go" href="/mods/artisan-machines.html">View Artisan Machines</a>
     </div>
     <div class="shot" data-mod="artisan-machines"><span>Image</span></div>
     </div>
@@ -154,5 +161,6 @@ h2{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.95;font-weight:800;letter-spa
   [].forEach.call(document.querySelectorAll(".shot[data-mod]"),setup);
 })();
 </script>
+</div>
 </body>
 </html>

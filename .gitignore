@@ -1,0 +1,5 @@
+# Installed packages (recreated by "npm install")
+node_modules/
+
+# Wrangler's local cache
+.wrangler/

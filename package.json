@@ -1,0 +1,10 @@
+{
+  "name": "cloudywd",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.168.0"
+  }
+}

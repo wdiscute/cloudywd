@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Starcatcher Datapack Generator | cloudywd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-top: #0a2a4a;
+    --bg-bottom: #04101f;
+    --text: #e8f4ff;
+    --muted: #a9c3de;
+    --focus: #7cc4ff;
+    --panel: rgba(6, 22, 40, .55);
+    --panel-2: rgba(190, 220, 255, .05);
+    --border: rgba(190, 220, 255, .22);
+    --border-soft: rgba(190, 220, 255, .12);
+    --error: #ff9a9a;
+    --warn: #ffd58a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { min-height: 100%; background: var(--bg-bottom); }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    font-family: "Outfit", system-ui, sans-serif;
+    background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)) fixed;
+  }
+
+  main {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 16px 64px;
+  }
+
+  h1 {
+    margin: 0 0 24px;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+
+  h2 { margin: 0 0 12px; font-size: 1.1rem; font-weight: 600; }
+
+
+  code {
+    padding: 1px 6px;
+    background: rgba(190, 220, 255, .1);
+    border-radius: 5px;
+    font-size: .9em;
+  }
+
+  /* Two columns on wide screens: pack + fish list on the left, editor on the right. */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .panel {
+    padding: 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    min-width: 0;
+  }
+
+  /* z-index: each .panel's blur makes its own layer, so without this the editor
+     (later in the page) would paint over (?) bubbles that stick out of the sidebar. */
+  .sidebar { display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 2; }
+  /* Two-column layout: the sidebar sticks while the editor scrolls. It is capped to the visible
+     height (--view-h, set from the scroll area in the script) and scrolls on its own if it is
+     taller, so the Download panel is always reachable. */
+  @media (min-width: 861px) {
+    .sidebar {
+      position: sticky; top: 20px;
+      max-height: calc(var(--view-h, 100vh) - 40px);
+      overflow-y: auto;
+      overflow-x: hidden; /* hidden (?) bubbles still take up width; no sideways scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(190, 220, 255, .35) transparent;
+    }
+  }
+
+  /* ---------- form controls ---------- */
+
+  .field { display: block; margin: 0 0 12px; }
+  .field > span, .field-label {
+    display: block;
+    margin: 0 0 5px;
+    font-size: .88rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  /* (?) help bubble: the text appears above it on hover or keyboard focus. */
+  .tip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    margin-left: 6px;
+    vertical-align: 1px;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: help;
+  }
+  .tip:hover, .tip:focus-visible { color: var(--text); border-color: var(--focus); outline: none; }
+  .tip-text {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: -10px;
+    z-index: 20;
+    width: max-content;
+    max-width: min(260px, 70vw);
+    padding: 7px 10px;
+    font-size: .82rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--text);
+    background: #0b2238;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .4);
+    overflow-wrap: anywhere;
+    white-space: pre-line; /* line breaks in the help text show as new lines */
+    opacity: 0;
+    visibility: hidden;
+    cursor: auto;
+    transition: opacity .12s, visibility 0s linear .12s; /* short grace period when leaving */
+  }
+  .tip:hover .tip-text, .tip:focus-visible .tip-text { opacity: 1; visibility: visible; transition: opacity .12s; }
+  /* Invisible bridge over the gap below the bubble, so the cursor can move from the (?) onto the text. */
+  .tip-text::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 10px; }
+  /* (!) bubble next to a field with a problem: red for errors, yellow for warnings. */
+  .tip.alert { cursor: default; }
+  .tip.alert.error { color: var(--error); border-color: var(--error); }
+  .tip.alert.warn { color: var(--warn); border-color: var(--warn); }
+  .tip.alert .tip-text { font-size: .82rem; text-transform: none; letter-spacing: normal; }
+  h2 .tip.alert { vertical-align: 3px; }
+
+  /* Fish Info: fields on the left, rarity dots on the right. */
+  /* wrap-reverse puts the rarity above the fields on narrow screens; with it,
+     flex-end means "top", so both columns line up at the top. */
+  .info-layout { display: flex; flex-wrap: wrap-reverse; gap: 4px 24px; align-items: flex-end; }
+  .info-main { flex: 1 1 320px; min-width: 0; }
+  /* Two checkboxes sharing one grid cell, lined up with the inputs beside them. */
+  .type-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 18px; }
+  .type-row > .field { flex: 0 1 200px; min-width: 150px; }
+  .grid-checks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin: 0 0 12px; min-height: 38px; }
+  .grid-checks .check { margin: 0; }
+  .rarity-pick { flex: 0 0 auto; margin: 0 0 12px; }
+  .rarity-dots { display: flex; gap: 10px; padding: 4px 0; }
+  .rarity-dot {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(4, 16, 31, .9);
+    box-shadow: 0 0 0 1px var(--border);
+    opacity: .55;
+    transition: transform .12s, opacity .12s, box-shadow .12s;
+  }
+  .rarity-dot:hover { opacity: .9; transform: scale(1.08); }
+  .rarity-dot[aria-checked="true"] { opacity: 1; transform: scale(1.15); box-shadow: 0 0 0 2px #fff; }
+  .rarity-dot:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  /* Centred under the dots, underlined in its own colour like the header's current page. */
+  .rarity-name {
+    display: table;
+    margin: 6px auto 0;
+    padding-bottom: 3px;
+    font-weight: 600;
+    font-size: .95rem;
+    border-bottom: 2px solid currentColor;
+  }
+
+  /* Rarity colours, matching the mod's tooltip colours. */
+  .rarity-dot.r-trash { background: #8b8b8b; }
+  .rarity-dot.r-common { background: #f2f2f2; }
+  .rarity-dot.r-uncommon { background: linear-gradient(135deg, rgb(11, 185, 2), rgb(2, 185, 69)); }
+  /* Rare and epic: one solid colour sliding back and forth between the two ends of
+     the mod's gradient (dark ends lifted a little so they read on the dark page). */
+  @keyframes rarity-rare { from { color: rgb(70, 110, 220); background-color: rgb(70, 110, 220); } to { color: rgb(100, 180, 255); background-color: rgb(100, 180, 255); } }
+  @keyframes rarity-epic { from { color: rgb(125, 70, 255); background-color: rgb(125, 70, 255); } to { color: rgb(255, 0, 224); background-color: rgb(255, 0, 224); } }
+  .rarity-dot.r-rare { animation: rarity-rare 2s ease-in-out infinite alternate; }
+  .rarity-dot.r-epic { animation: rarity-epic 2s ease-in-out infinite alternate; }
+  /* Legendary: one solid colour that cycles through every hue, like in game. */
+  @keyframes rarity-hue {
+    0%    { color: hsl(0, 100%, 60%);   background-color: hsl(0, 100%, 60%); }
+    16.6% { color: hsl(60, 100%, 60%);  background-color: hsl(60, 100%, 60%); }
+    33.3% { color: hsl(120, 100%, 60%); background-color: hsl(120, 100%, 60%); }
+    50%   { color: hsl(180, 100%, 60%); background-color: hsl(180, 100%, 60%); }
+    66.6% { color: hsl(240, 100%, 68%); background-color: hsl(240, 100%, 68%); }
+    83.3% { color: hsl(300, 100%, 60%); background-color: hsl(300, 100%, 60%); }
+    100%  { color: hsl(360, 100%, 60%); background-color: hsl(360, 100%, 60%); }
+  }
+  .rarity-dot.r-legendary { animation: rarity-hue 4s linear infinite; }
+  .rarity-name.r-trash { color: #a8a8a8; }
+  .rarity-name.r-common { color: #f2f2f2; }
+  .rarity-name.r-uncommon { color: rgb(30, 200, 60); }
+  /* Text shifts colour too; the underline follows via currentColor. */
+  .rarity-name.r-rare { animation: rarity-rare-text 2s ease-in-out infinite alternate; }
+  .rarity-name.r-epic { animation: rarity-epic-text 2s ease-in-out infinite alternate; }
+  @keyframes rarity-rare-text { from { color: rgb(70, 110, 220); } to { color: rgb(100, 180, 255); } }
+  @keyframes rarity-epic-text { from { color: rgb(125, 70, 255); } to { color: rgb(255, 0, 224); } }
+  /* The text only animates its colour (the underline follows via currentColor). */
+  .rarity-name.r-legendary { animation: rarity-hue-text 4s linear infinite; }
+  @keyframes rarity-hue-text {
+    0%    { color: hsl(0, 100%, 60%); }
+    16.6% { color: hsl(60, 100%, 60%); }
+    33.3% { color: hsl(120, 100%, 60%); }
+    50%   { color: hsl(180, 100%, 60%); }
+    66.6% { color: hsl(240, 100%, 68%); }
+    83.3% { color: hsl(300, 100%, 60%); }
+    100%  { color: hsl(360, 100%, 60%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rarity-dot.r-legendary, .fish-row.r-legendary::before { animation: none; background-color: hsl(45, 100%, 60%); }
+    .rarity-name.r-legendary { animation: none; color: hsl(45, 100%, 60%); }
+    .rarity-dot.r-rare, .fish-row.r-rare::before { animation: none; background-color: rgb(100, 180, 255); }
+    .rarity-dot.r-epic, .fish-row.r-epic::before { animation: none; background-color: rgb(200, 60, 240); }
+    .rarity-name.r-rare { animation: none; color: rgb(100, 180, 255); }
+    .rarity-name.r-epic { animation: none; color: rgb(200, 60, 240); }
+  }
+
+  /* File name row above the sections, with the read-only full path under it. */
+  .file-row { margin: 0 0 16px; max-width: 520px; }
+  .file-row .field { margin-bottom: 6px; }
+  .full-path { display: inline-block; max-width: 100%; color: var(--muted); overflow-wrap: anywhere; }
+
+  /* Optional extras (bucket, entity, minigame item): added fields, then "+" buttons. */
+  .extras { margin: 4px 0 0; }
+  .extra { margin: 0 0 12px; max-width: 420px; }
+  .extra .check { margin: 8px 0 0; }
+  /* Textbox with its remove button sitting inside, on the right (like the fish list rows). */
+  .input-wrap { position: relative; }
+  .input-wrap > input { padding-right: 38px; }
+  .input-wrap > button.icon {
+    position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+    width: 28px; height: 28px; padding: 0;
+    background: transparent; border-color: transparent; border-radius: 7px;
+  }
+  .input-wrap > button:hover { background: rgba(255, 90, 90, .18); }
+  .input-wrap > button.icon svg { width: 20px; height: 20px; }
+
+  .hint { display: block; margin-top: 4px; font-size: .8rem; color: var(--muted); opacity: .8; line-height: 1.4; }
+
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    font: inherit;
+    font-size: .95rem;
+    padding: 8px 10px;
+    color: var(--text);
+    background: rgba(4, 16, 31, .7);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  select { cursor: pointer; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+  textarea.raw-json { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; resize: vertical; }
+  input.invalid, select.invalid, textarea.invalid, input.check-invalid { border-color: var(--error); background: rgba(80, 10, 20, .35); }
+
+  input[type="color"] {
+    width: 56px; height: 38px; padding: 2px;
+    background: rgba(4, 16, 31, .7);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .check { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; cursor: pointer; }
+  .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--focus); }
+  .check span { font-size: .92rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 0 14px;
+  }
+  /* Sweetspot fields: 4 columns; Texture spans the row, Behaviour spans two. */
+  .grid.sized { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid.sized > .f-full { grid-column: 1 / -1; }
+  .grid.sized > .f-wide { grid-column: span 2; }
+  .grid.sized > .check { align-self: end; min-height: 38px; } /* line up with the boxes beside it */
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: .92rem;
+    padding: 9px 16px;
+    color: #04101f;
+    background: var(--focus);
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  button:hover { background: #a5d8ff; }
+  button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  button:disabled { opacity: .6; cursor: default; }
+
+  button.ghost {
+    color: var(--text);
+    background: rgba(190, 220, 255, .08);
+    border: 1px solid var(--border);
+  }
+  button.ghost:hover { background: rgba(190, 220, 255, .16); }
+  button.danger { color: var(--error); }
+  button.small { padding: 5px 10px; font-size: .82rem; }
+  button.icon { display: inline-flex; align-items: center; justify-content: center; padding: 5px 8px; font-size: .9rem; line-height: 1; }
+  button.danger.icon { color: #ff7a7a; }
+
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row > input, .row > select { flex: 1 1 140px; width: auto; min-width: 0; }
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+
+  /* ---------- fish list ---------- */
+
+  /* "Fish in this pack" heading with the + button on the right. */
+  .list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; }
+  .list-head h2 { margin: 0 auto 0 0; } /* pushes the import and + buttons to the right */
+  .icon-btn.upload { height: 34px; }
+
+  /* Small square icon buttons (+, clone, trash). */
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 34px;
+    padding: 0;
+    color: var(--text);
+    background: rgba(190, 220, 255, .08);
+    border: 1px solid var(--border);
+  }
+  .icon-btn:hover { background: rgba(190, 220, 255, .18); }
+  .icon-btn.add { height: 34px; color: #04101f; background: var(--focus); border-color: var(--focus); }
+  .icon-btn.add:hover { background: #a5d8ff; }
+  .icon-btn.trash { color: #ff7a7a; }
+  .icon-btn.trash:hover { background: rgba(255, 90, 90, .18); border-color: rgba(255, 120, 120, .5); }
+
+  .fish-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  /* Each fish is one box: the clickable name area, with clone/trash icons inside on the right. */
+  .fish-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-right: 6px;
+    background: var(--panel-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 9px;
+    transition: background .15s;
+  }
+  .fish-row:hover { background: rgba(190, 220, 255, .12); }
+  /* Rarity stripe down the left edge of each fish, same colours as the rarity dots. */
+  .fish-row { position: relative; overflow: hidden; padding-left: 5px; }
+  .fish-row::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+  .fish-row.r-trash::before { background: #8b8b8b; }
+  .fish-row.r-common::before { background: #f2f2f2; }
+  .fish-row.r-uncommon::before { background: linear-gradient(180deg, rgb(11, 185, 2), rgb(2, 185, 69)); }
+  .fish-row.r-rare::before { animation: rarity-rare 2s ease-in-out infinite alternate; }
+  .fish-row.r-epic::before { animation: rarity-epic 2s ease-in-out infinite alternate; }
+  .fish-row.r-legendary::before { animation: rarity-hue 4s linear infinite; }
+  .fish-row.current { border-color: var(--focus); background: rgba(124, 196, 255, .14); }
+  .fish-item {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
+    font-weight: 500;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    padding: 8px 4px 8px 10px;
+  }
+  .fish-item:hover { background: transparent; }
+  .fish-row .icon-btn { width: 28px; height: 28px; background: transparent; border-color: transparent; }
+  .fish-row .icon-btn:hover { background: rgba(190, 220, 255, .16); }
+  .fish-row .icon-btn.trash:hover { background: rgba(255, 90, 90, .18); }
+  .fish-item .name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fish-item .sub { display: block; font-size: .78rem; font-weight: 400; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fish-item.has-error .name::after { content: " \25CF"; color: var(--error); }
+  .empty { margin: 0 0 12px; font-size: .9rem; color: var(--muted); }
+
+  /* ---------- editor sections ---------- */
+
+  details.section {
+    margin: 0 0 14px;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    background: var(--panel-2);
+  }
+  details.section > summary {
+    padding: 12px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style-position: inside;
+  }
+  details.section > .body { padding: 4px 16px 14px; }
+
+  .card {
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    background: rgba(4, 16, 31, .35);
+    padding: 10px 12px 2px;
+  }
+  .card-head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+  /* Thin line under the title of restriction, modifier and sweetspot cards. */
+  .card-head.divided { padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .card-head .title { flex: 1 1 auto; font-weight: 600; font-size: .92rem; min-width: 0; overflow-wrap: anywhere; }
+  .card-head .title small { font-weight: 400; color: var(--muted); }
+  .card-head .type-id { font-weight: 400; color: var(--muted); opacity: .7; }
+  /* Sweetspot name: looks like the card title until hovered or focused. */
+  .card-head input.name-input {
+    flex: 1 1 auto; width: auto; min-width: 0; margin: -3px 0 -3px -6px; padding: 3px 6px;
+    font-weight: 600; font-size: .92rem; color: var(--text);
+    background: transparent; border: 1px solid transparent; border-radius: 6px;
+  }
+  .card-head input.name-input::placeholder { color: var(--text); opacity: 1; }
+  .card-head input.name-input:hover { border-color: rgba(190, 220, 255, .15); }
+  .card-head input.name-input:focus { background: rgba(4, 16, 31, .5); border-color: var(--border); outline: none; }
+  .list-editor { margin: 0 0 12px; }
+  .list-editor > .items { display: flex; flex-direction: column; gap: 8px; margin: 0 0 8px; }
+  .add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .add-row select { flex: 1 1 200px; width: auto; }
+
+  .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+  .preset-row select { flex: 1 1 220px; width: auto; }
+  .preset-row .clip-btn { min-width: 5.5em; text-align: center; } /* wide enough for "Copied"; Copy and Paste match */
+
+  pre.json {
+    margin: 0;
+    padding: 12px;
+    max-height: 420px;
+    overflow: auto;
+    font-size: .8rem;
+    line-height: 1.45;
+    color: #cfe6ff;
+    background: rgba(4, 16, 31, .7);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+  }
+
+  .status { margin: 10px 0 0; min-height: 1.4em; font-size: .9rem; color: var(--muted); line-height: 1.45; }
+  .status:empty { margin: 0; min-height: 0; } /* no gap under the buttons until there is a message */
+  .status.error { color: var(--error); }
+  .status.ok { color: #9be7b0; }
+  .status ul { margin: 6px 0 0; padding-left: 18px; }
+  .warnings { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgba(255, 213, 138, .35); border-radius: 10px; color: var(--warn); font-size: .88rem; }
+  .warnings ul { margin: 0; padding-left: 18px; }
+  .editor-empty { color: var(--muted); text-align: center; padding: 40px 10px; }
+
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* Shown while files are dragged over the page. */
+  body.dropping::after {
+    content: "Drop .json fish files to add them, or a .zip to import a datapack";
+    position: fixed; inset: 12px; z-index: 100;
+    display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center;
+    font-size: 1.1rem; font-weight: 600; color: var(--text);
+    background: rgba(4, 16, 31, .82);
+    border: 2px dashed var(--focus); border-radius: 16px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<script src="/mods/header.js" data-current="/mods/starcatcher/"></script>
+<div class="content">
+
+<main>
+  <h1>Starcatcher Fish Datapack Generator</h1>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <section class="panel" aria-labelledby="pack-heading">
+        <h2 id="pack-heading">Datapack Info</h2>
+        <div class="field"><span>Datapack name</span>
+          <input type="text" id="pack-name" aria-label="Datapack name" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field"><span>Minecraft version</span>
+          <select id="pack-version" aria-label="Minecraft version"></select>
+        </div>
+        <div class="field"><span>Namespace<span class="tip" tabindex="0" aria-label="Help">?<span class="tip-text" role="tooltip">The namespace of your datapack.<br><br>If you wish to override Starcatcher's base entries, this should be <code>starcatcher</code>.</span></span></span>
+          <input type="text" id="pack-namespace" aria-label="Namespace" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field"><span>Description</span>
+          <input type="text" id="pack-description" aria-label="Description" autocomplete="off">
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="fish-heading">
+        <div class="list-head">
+          <h2 id="fish-heading">Fish in this pack</h2>
+          <button type="button" class="icon-btn upload" id="import-zip" aria-label="Import .zip or .json" title="Import .zip or .json">
+            <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
+          </button>
+          <input type="file" id="import-file" accept=".zip,application/zip,.json,application/json" multiple class="visually-hidden" tabindex="-1">
+          <button type="button" class="icon-btn add" id="add-fish" aria-label="Add fish" title="Add fish">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <ul class="fish-list" id="fish-list"></ul>
+        <p class="empty" id="fish-empty">No fish yet.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="download-heading">
+        <h2 id="download-heading">Download</h2>
+        <div class="row">
+          <button type="button" id="download">Download .zip</button>
+          <button type="button" class="ghost danger" id="clear-all">Start over</button>
+        </div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </section>
+    </aside>
+
+    <section class="panel" id="editor" aria-label="Fish editor"></section>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="/mods/starcatcher/datapack-generator.js"></script>
+</div>
+</body>
+</html>

@@ -2,30 +2,75 @@
 /*
  * cloudywd.dev – shared mods header
  *
- * Usage: put this as the FIRST thing inside <body> on every mod page:
+ * Usage: put this as the FIRST thing inside <body> on every mod page,
+ * and wrap everything else on the page in <div class="content">:
+ *   <body>
  *   <script src="/mods/header.js"></script>
+ *   <div class="content">
+ *     ...page...
+ *   </div>
+ *   </body>
+ *
+ * The header stays pinned at the top; only .content scrolls,
+ * so its scrollbar sits below the header.
  *
  * To add, remove or reorder mods, edit the MODS list below.
  * Every page updates.
  *
  * The current page is highlighted automatically from its URL.
  * (Optional) force it:
- * <script src="/mods/header.js" data-current="/mods/starcatcher.html"></script>
+ * <script src="/mods/header.js" data-current="/mods/starcatcher/"></script>
  */
 (function () {
   var MODS = [
-    { name: "Starcatcher",           href: "/mods/starcatcher.html" },
-    { name: "Starcatcher Lite",      href: "/mods/starcatcher-lite.html" },
-    { name: "Starcatcher's Delight", href: "/mods/starcatchers-delight.html" },
-    { name: "Timeless Echoes",       href: "/mods/timeless-echoes.html" },
-    { name: "wd's Selling Bin",      href: "/mods/wds-selling-bin.html" },
-    { name: "Artisan Machines",      href: "/mods/artisan-machines.html" },
-    { name: "Fancy Tab Sections",    href: "/mods/fancy-tab-sections.html" },
-    { name: "LibTooltips",           href: "/mods/libtooltips.html" },
-    { name: "Laicaps",               href: "/mods/laicaps.html" }
+    { name: "Starcatcher",           href: "/mods/starcatcher/" },
+    { name: "Starcatcher Lite",      href: "/mods/starcatcher-lite/" },
+    { name: "Starcatcher's Delight", href: "/mods/starcatchers-delight/" },
+    { name: "Timeless Echoes",       href: "/mods/timeless-echoes/" },
+    { name: "wd's Selling Bin",      href: "/mods/wds-selling-bin/" },
+    { name: "Artisan Machines",      href: "/mods/artisan-machines/" },
+    { name: "Fancy Tab Sections",    href: "/mods/fancy-tab-sections/" },
+    { name: "LibTooltips",           href: "/mods/libtooltips/" },
+    { name: "Laicaps",               href: "/mods/laicaps/" }
   ];
 
   var CSS = `
+
+/* Page layout: the page itself never scrolls. The body is exactly one
+   screen tall: the header on top, and .content filling the rest.
+   Only .content scrolls, so the header never moves and the scrollbar
+   only appears next to the content.
+   color-scheme tells the browser the site is dark (dark scrollbars etc). */
+html {
+    color-scheme: dark;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.site {
+    flex: none;
+}
+
+.content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    scrollbar-color: rgba(190,220,255,.35) transparent;
+}
+
+.content:focus {
+    outline: none;
+}
 
 .site {
     --focus: #7cc4ff;
@@ -82,6 +127,13 @@
     font-size: .95rem;
     font-weight: 500;
     color: #a9c3de;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .15s;
+}
+
+.site .area:hover {
+    color: #fff;
 }
 
 .site nav {
@@ -96,6 +148,26 @@
 
 .js .site nav {
     flex-wrap: nowrap;
+}
+
+/* Each link reserves the width of its bold version (an invisible bold copy
+   of the text sits underneath), so links don't shift when the current
+   page's link turns bold. */
+.site nav .label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.site nav .label::after {
+    content: attr(data-text);
+    content: attr(data-text) / "";
+    font-weight: 600;
+    height: 0;
+    visibility: hidden;
+    overflow: hidden;
+    user-select: none;
+    pointer-events: none;
 }
 
 .site nav a {
@@ -252,12 +324,12 @@
     '<div class="in">' +
       '<a class="root" href="/">cloudywd</a>' +
       '<span class="sep" aria-hidden="true">|</span>' +
-      '<span class="area">Mods</span>' +
+      '<a class="area" href="/mods/">Mods</a>' +
       '<nav id="modnav" aria-label="Mods">' +
         MODS.map(function (m) {
-          return '<a href="' + m.href + '"' +
+          return '<a href="' + m.href + '" aria-label="' + m.name + '"' +
             (isCurrent(m) ? ' aria-current="page"' : '') +
-            '>' + m.name + '</a>';
+            '><span class="label" data-text="' + m.name + '">' + m.name + '</span></a>';
         }).join("") +
         '<div class="more" hidden>' +
           '<a class="trig" tabindex="0" role="button" aria-haspopup="true">More</a>' +
@@ -358,6 +430,22 @@
       measure();
       layout();
     });
+  }
+
+  // Keyboard scrolling (arrows, Page Down, Space) goes to the focused element.
+  // Since .content is what scrolls now, focus it when the page loads.
+  function focusContent() {
+    var content = document.querySelector(".content");
+    if (!content) return;
+    content.tabIndex = -1;
+    if (!document.activeElement || document.activeElement === document.body) {
+      content.focus({ preventScroll: true });
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", focusContent);
+  } else {
+    focusContent();
   }
 
 })();
