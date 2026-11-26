@@ -26,6 +26,11 @@
   ];
 
   var CSS = `
+
+html {
+    scrollbar-gutter: stable;
+}
+
 .site {
     --focus: #7cc4ff;
     --accent: #e8f4ff;
