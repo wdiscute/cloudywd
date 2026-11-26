@@ -27,8 +27,6 @@
 
   var CSS = `
 
-
-
 .site {
     --focus: #7cc4ff;
     --accent: #e8f4ff;
@@ -60,7 +58,6 @@
     align-items: center;
     gap: 14px;
     flex-wrap: nowrap;
-    transform: translateX(calc((100vw - 100%) / 2));
 }
 
 .site .root {
