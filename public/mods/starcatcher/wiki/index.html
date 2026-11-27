@@ -2,26 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="/cloud.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Starcatcher Wiki</title>
-<meta name="description" content="The Starcatcher wiki is coming soon.">
+<meta name="description" content="Guides for every fish, item and secret in Starcatcher.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/mods/landing.css">
+<link rel="stylesheet" href="/mods/starcatcher/wiki/wiki.css">
 </head>
 <body>
 <script src="/mods/header.js" data-current="/mods/starcatcher/"></script>
 <script src="/mods/starcatcher/bubbles.js"></script>
 <script src="/mods/starcatcher/ocean.js"></script>
 <div class="content">
-<!-- Placeholder: the Starcatcher wiki will live in this folder -->
-<main>
-  <h1>Starcatcher Wiki</h1>
-  <p class="tag">Guides for every fish, item and secret in Starcatcher.</p>
-  <p class="soon">Wiki coming soon</p>
-  <p><a class="back" href="/mods/starcatcher/">&larr; Back to Starcatcher</a></p>
-</main>
+<div class="wiki">
+  <!-- Sidebar: filled in by wiki.js from the PAGES list -->
+  <nav class="wiki-nav" aria-label="Wiki pages">
+    <a class="wiki-title" href="#items">Starcatcher Wiki</a>
+    <button class="wiki-toggle" type="button" aria-expanded="false">Pages</button>
+    <div class="wiki-search">
+      <input type="search" placeholder="Search items &amp; pages…" aria-label="Search the wiki" autocomplete="off">
+      <div class="wiki-results" hidden></div>
+    </div>
+    <div class="wiki-links"></div>
+  </nav>
+  <!-- Article: the current markdown page is rendered here -->
+  <article class="wiki-page"></article>
 </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="/mods/starcatcher/wiki/models.js"></script>
+<script src="/mods/starcatcher/wiki/wiki.js"></script>
 </body>
 </html>

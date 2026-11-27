@@ -1,0 +1,376 @@
+/* Starcatcher wiki layout: sidebar on the left, article on the right */
+.wiki{
+  width:100%;max-width:1100px;margin:0 auto;padding:32px 20px 60px;
+  display:grid;grid-template-columns:230px 1fr;gap:32px;align-items:start;
+}
+
+/* Sidebar */
+.wiki-nav{
+  position:sticky;top:20px;padding:18px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(190,220,255,.22);border-radius:16px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.wiki-title{display:block;font-weight:700;font-size:1.15rem;color:#fff;text-decoration:none;margin-bottom:6px}
+.wiki-toggle{display:none}
+.wiki-section{margin:16px 0 6px;font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7fa3c8}
+.wiki-links a{
+  display:block;padding:6px 10px;margin:0 -10px;border-radius:8px;
+  color:#c9dcf0;text-decoration:none;font-weight:500;transition:background .15s,color .15s;
+}
+.wiki-links a:hover{background:rgba(255,255,255,.08);color:#fff}
+.wiki-links a.on{background:var(--accent);color:#0a2542}
+/* All Items stands out as a button above the sections */
+.wiki-links a[data-slug="items"]{
+  margin:0;padding:9px 12px;font-weight:600;color:#fff;
+  background:rgba(255,255,255,.1);border:1px solid rgba(190,220,255,.35);border-radius:10px;
+}
+.wiki-links a[data-slug="items"]:hover{background:rgba(255,255,255,.16);border-color:rgba(190,220,255,.6)}
+.wiki-links a[data-slug="items"].on{background:var(--accent);border-color:var(--accent);color:#0a2542}
+
+/* Article */
+.wiki-page{
+  min-width:0;padding:32px 36px;line-height:1.65;font-size:1.05rem;color:#d7e6f5;
+  background:rgba(6,22,40,.35);border:1px solid rgba(190,220,255,.18);border-radius:16px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:opacity .15s;
+}
+.wiki-page.loading{opacity:.4}
+.wiki-page h1{font-size:clamp(2rem,5vw,2.8rem);margin-bottom:12px}
+.wiki-page h2{font-size:1.5rem;color:#fff;margin:32px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(190,220,255,.18)}
+.wiki-page h3{font-size:1.2rem;color:#fff;margin:24px 0 8px}
+.wiki-page p,.wiki-page ul,.wiki-page ol,.wiki-page table,.wiki-page pre,.wiki-page blockquote{margin-top:12px}
+.wiki-page ul,.wiki-page ol{padding-left:1.4em}
+.wiki-page li+li{margin-top:4px}
+.wiki-page a{color:var(--focus);text-underline-offset:3px}
+.wiki-page a:hover{color:#fff}
+.wiki-page strong{color:#fff}
+.wiki-page img{max-width:100%;height:auto;border-radius:10px}
+.wiki-page code{font-size:.9em;padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.1)}
+.wiki-page pre{padding:14px 16px;border-radius:10px;background:rgba(0,0,0,.3);overflow-x:auto}
+.wiki-page pre code{padding:0;background:none}
+.wiki-page blockquote{padding:10px 16px;border-left:3px solid var(--focus);background:rgba(124,196,255,.08);border-radius:0 10px 10px 0}
+/* Article tables: same look as the item page tables (wk-where / wk-chances) */
+.wiki-page table{display:table;width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;
+  background:rgba(255,255,255,.05);border:1px solid rgba(190,220,255,.15);border-radius:10px;overflow:hidden}
+.wiki-page th,.wiki-page td{padding:7px 16px;border:0;text-align:left;vertical-align:middle}
+.wiki-page th{font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7fa3c8;background:rgba(255,255,255,.04)}
+.wiki-page tbody tr + tr td{border-top:1px solid rgba(190,220,255,.1)}
+.wiki-page td .wk-chip{vertical-align:middle}
+.wiki-page hr{border:0;border-top:1px solid rgba(190,220,255,.18);margin:28px 0}
+
+/* ---------- Search (sidebar) ---------- */
+.wiki-nav{z-index:2}
+.wiki-search{position:relative;margin:10px 0 14px}
+.wiki-search input,.wk-filter-text{
+  width:100%;padding:8px 12px;font:inherit;font-size:.95rem;color:#fff;
+  background:rgba(0,0,0,.25);border:1px solid rgba(190,220,255,.25);border-radius:10px;
+}
+/* The clear (x) button: a 32px click area with a small x drawn in the middle. Negative
+   margins let it reach into the input's padding without making the input taller. */
+.wiki-search input::-webkit-search-cancel-button,.wk-filter-text::-webkit-search-cancel-button{
+  -webkit-appearance:none;appearance:none;width:32px;height:32px;margin:-8px -12px -8px 4px;cursor:pointer;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 1.5l7 7M8.5 1.5l-7 7' stroke='%23c9dcf0' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center/10px 10px no-repeat;
+  opacity:.75;
+}
+.wiki-search input::-webkit-search-cancel-button:hover,.wk-filter-text::-webkit-search-cancel-button:hover{opacity:1}
+.wiki-search input::placeholder,.wk-filter-text::placeholder{color:#7fa3c8}
+.wiki-search input:focus,.wk-filter-text:focus{outline:none;border-color:var(--focus)}
+.wiki-results{
+  position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;padding:6px;
+  min-width:240px;max-height:60vh;overflow-y:auto;
+  background:#0d2e50;border:1px solid rgba(190,220,255,.3);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4);
+}
+.wiki-results a{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;color:#d7e6f5;text-decoration:none}
+.wiki-results a:hover,.wiki-results a.sel{background:rgba(255,255,255,.1);color:#fff}
+
+/* ---------- Item icons ---------- */
+/* background-size 100% auto + top: shows the first frame of animated (tall strip) textures */
+.wk-icon{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;width:24px;height:24px;
+  background:no-repeat top center/100% auto;image-rendering:pixelated;
+}
+.wk-icon.big{width:40px;height:40px}
+.wk-icon.huge{width:128px;height:128px}
+/* Hovering an item (grid card or recipe slot): it grows, lifts and slowly tilts around,
+   like it's floating towards the screen. Size/lift ease in; the tilt loops.
+   To keep 16x16 pixel art crisp, these icons are drawn at 48px (exactly 3 screen
+   pixels per texture pixel) and shrunk with `scale` to their resting size; hovering
+   scales them back up to 1, so the browser never stretches a small blurry copy.
+   Negative margins keep the layout at the resting size. */
+.wk-card .wk-icon,.wk-slot .wk-icon{width:48px;height:48px;transition:scale .3s ease,translate .3s ease}
+.wk-card .wk-icon{margin:-4px;scale:.8334}                 /* rests at 40px */
+.wk-slot .wk-icon{margin:-8px;scale:.6667}                 /* rests at 32px */
+.wk-out .wk-slot .wk-icon{margin:-4px;scale:.8334}         /* rests at 40px */
+.wk-card:hover .wk-icon,.wk-slot:hover .wk-icon{
+  position:relative;z-index:1;scale:1;translate:0 -4px;
+  animation:wk-float 3s ease-in-out infinite;
+}
+@keyframes wk-float{
+  0%,100%{transform:perspective(200px) rotateX(0) rotateY(0) rotate(0)}
+  25%{transform:perspective(200px) rotateX(8deg) rotateY(14deg) rotate(-4deg)}
+  50%{transform:perspective(200px) rotateX(-6deg) rotateY(0) rotate(0)}
+  75%{transform:perspective(200px) rotateX(8deg) rotateY(-14deg) rotate(4deg)}
+}
+@media (prefers-reduced-motion:reduce){.wk-card:hover .wk-icon,.wk-slot:hover .wk-icon{animation:none}}
+
+/* 3D renders are already high-res: scale them smoothly */
+.wk-icon.r3d{image-rendering:auto;background-size:contain;background-position:center}
+.wk-icon.none{background:rgba(255,255,255,.1);border-radius:6px;font-size:.8em;font-weight:700;color:#a9c3de}
+
+/* Inline item: {{item ...}} */
+.wk-chip{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;padding:1px 8px 1px 3px;border-radius:8px;background:rgba(255,255,255,.08);text-decoration:none;font-weight:500}
+.wiki-page a.wk-chip{color:#fff}
+.wiki-page a.wk-chip:hover{background:rgba(255,255,255,.16)}
+.wk-chip .wk-icon{width:20px;height:20px}
+
+/* Item grid: {{items ...}}, All Items page */
+.wk-block{margin-top:14px}
+/* Several blocks on one line ({{items x}} {{recipe x}}) sit side by side */
+.wk-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 24px}
+.wk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+/* All Items: one collapsible block per category */
+.wk-group{scroll-margin-top:20px}
+.wk-group + .wk-group{margin-top:34px}
+.wiki-page h2.wk-group-head{margin:0 0 14px;padding:0 0 8px;font-size:1.25rem;border-bottom:2px solid var(--accent)}
+.wk-collapse{
+  display:flex;align-items:center;gap:10px;width:100%;padding:0;
+  background:none;border:0;font:inherit;color:inherit;text-align:left;cursor:pointer;
+}
+.wk-chevron{width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s;flex:none}
+.wk-group.shut .wk-chevron{transform:rotate(-45deg)}
+.wk-group.shut .wk-group-body{display:none}
+.wk-group.shut + .wk-group{margin-top:22px}
+.wk-group-count{
+  padding:1px 9px;border-radius:999px;font-size:.75rem;font-weight:600;
+  background:rgba(255,255,255,.12);color:#c9dcf0;
+}
+.wk-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 8px;text-align:center;
+  background:rgba(255,255,255,.05);border:1px solid rgba(190,220,255,.15);border-radius:12px;
+  color:#e6f0fa;text-decoration:none;font-size:.9rem;line-height:1.3;transition:background .15s,border-color .15s,transform .15s;
+}
+.wiki-page a.wk-card{color:#e6f0fa}
+a.wk-card:hover{background:rgba(255,255,255,.12);border-color:rgba(210,232,255,.5);transform:translateY(-2px)}
+.wk-empty{color:#7fa3c8;font-style:italic}
+
+/* Item page: fish description, like a note in a field guide */
+.wiki-page blockquote.wk-desc{
+  position:relative;margin:22px 0 0;padding:14px 18px 14px 46px;
+  border-left:3px solid var(--rarity,var(--accent));border-radius:0 12px 12px 0;
+  background:linear-gradient(90deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  font-style:italic;font-size:1.05rem;line-height:1.6;color:#e6f0fa;
+}
+.wiki-page blockquote.wk-desc::before{
+  content:"\201C";position:absolute;left:12px;top:2px;
+  font-size:2.8rem;line-height:1;font-style:normal;color:var(--rarity,var(--accent));opacity:.8;
+}
+.wk-desc.common{--rarity:#8fa1b3}
+.wk-desc.uncommon{--rarity:#5cc46e}
+.wk-desc.rare{--rarity:#5a9bf0}
+.wk-desc.epic{--rarity:#b673ec}
+.wk-desc.legendary{--rarity:hsl(var(--sc-hue) 100% 62%);animation:sc-rgb 10s linear infinite}
+/* Words the mod colours inside descriptions */
+.wk-desc-common{color:#a9b8c7;font-weight:600}
+.wk-desc-uncommon{color:#6fd37f;font-weight:600}
+.wk-desc-rare{color:#6eaaf5;font-weight:600}
+.wk-desc-epic{color:#c48af2;font-weight:600}
+.wk-desc-legendary{
+  font-weight:600;color:transparent;-webkit-background-clip:text;background-clip:text;
+  background-image:linear-gradient(90deg,hsl(var(--sc-hue) 100% 66%),hsl(calc(var(--sc-hue) + 60) 100% 66%));
+  animation:sc-rgb 10s linear infinite;
+}
+
+
+/* Item page: where and when a fish bites */
+.wiki-page table.wk-where{display:table;width:auto;min-width:min(100%,360px);max-width:100%;border-collapse:separate;border-spacing:0;margin:10px 0 0;font-size:.95rem;
+  background:rgba(255,255,255,.05);border:1px solid rgba(190,220,255,.15);border-radius:10px;overflow:hidden}
+.wiki-page .wk-where th,.wiki-page .wk-where td{padding:7px 16px;border:0;text-align:left;vertical-align:middle}
+.wiki-page .wk-where th{width:1%;white-space:nowrap;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7fa3c8;background:rgba(255,255,255,.04)}
+.wiki-page .wk-where tr + tr th,.wiki-page .wk-where tr + tr td{border-top:1px solid rgba(190,220,255,.1)}
+.wk-where-pre{color:#9fbad6}
+.wk-where-note{color:#7fa3c8;font-size:.85rem}
+.wk-where .wk-chip{vertical-align:middle}
+
+/* Item page: bonemealing drop chances */
+.wiki-page table.wk-chances{display:table;width:auto;max-width:100%;border-collapse:separate;border-spacing:0;margin:10px 0 0;font-size:.95rem;
+  background:rgba(255,255,255,.05);border:1px solid rgba(190,220,255,.15);border-radius:10px;overflow:hidden}
+.wiki-page .wk-chances th,.wiki-page .wk-chances td{padding:7px 16px;text-align:left;border:0}
+.wiki-page .wk-chances th{font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7fa3c8;background:rgba(255,255,255,.04)}
+.wiki-page .wk-chances td + td,.wiki-page .wk-chances th + th{text-align:right}
+.wiki-page .wk-chances tbody tr + tr td{border-top:1px solid rgba(190,220,255,.1)}
+.wk-chances .wk-golden{color:#f5c64b}
+
+/* Item page: trophy milestones */
+.wiki-page ul.wk-goals{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
+.wk-goals li{
+  display:flex;align-items:center;gap:12px;padding:9px 14px;border-radius:10px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(190,220,255,.15);line-height:1.45;
+}
+.wk-goals li::before{
+  content:"";flex:none;width:16px;height:16px;border-radius:50%;
+  border:2px solid var(--accent);box-sizing:border-box;
+}
+.wk-goals strong{color:#fff}
+.wk-desc-golden{color:#f5c64b;font-weight:600}
+
+/* Item page: modifiers list */
+.wiki-page ul.wk-mods{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.wk-mods li{
+  padding:8px 14px;border-left:3px solid var(--accent);border-radius:8px;
+  background:rgba(255,255,255,.05);line-height:1.45;
+}
+.wk-mod-note{display:block;margin-top:2px;font-size:.85rem;color:#7fa3c8}
+
+/* Category badges and fish rarity pills */
+.wk-rarity{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.75rem;font-weight:600;line-height:1.6;transition:filter .15s}
+.wiki-page a.wk-rarity{text-decoration:none}
+.wiki-page a.wk-rarity:hover{filter:brightness(1.15)}
+.wiki-page .wk-rarity.common{background:#5d6d7e;color:#fff}
+.wiki-page .wk-rarity.uncommon{background:#3f9b4f;color:#fff}
+.wiki-page .wk-rarity.rare{background:#3a7bd5;color:#fff}
+.wiki-page .wk-rarity.epic{background:#9b4fd6;color:#fff}
+.wiki-page .wk-rarity.legendary{
+  color:#14162a;animation:sc-rgb 10s linear infinite;
+  background:linear-gradient(90deg,hsl(var(--sc-hue) 100% 66%),hsl(calc(var(--sc-hue) + 40) 100% 66%));
+}
+
+/* Legendary = RGB, like the mod's legendary text (SCLegendary.java): the hue goes all the
+   way round every 10 seconds. Anything using hsl(var(--sc-hue) ...) with the sc-rgb
+   animation cycles through the rainbow. */
+@property --sc-hue{syntax:"<number>";inherits:true;initial-value:0}
+@keyframes sc-rgb{to{--sc-hue:360}}
+@media (prefers-reduced-motion:reduce){
+  .wk-desc.legendary,.wk-desc-legendary,.wiki-page .wk-rarity.legendary{animation:none}
+}
+.wk-badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.75rem;font-weight:600;line-height:1.6;background:rgba(255,255,255,.12);color:#d7e6f5;transition:filter .15s}
+.wiki-page a.wk-badge{text-decoration:none}
+.wiki-page a.wk-badge:hover{filter:brightness(1.3)}
+
+/* Item page: top bar. Back button, then round previous / next arrows */
+.wk-topbar{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.wk-topbar .wk-back{margin-right:4px}
+.wiki-page .wk-step{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;height:38px;min-width:38px;padding:0 9px;box-sizing:border-box;
+  color:var(--accent);text-decoration:none;font-size:.9rem;font-weight:600;
+  background:rgba(255,255,255,.06);border:1px solid rgba(190,220,255,.22);border-radius:999px;transition:background .15s,color .15s;
+}
+.wiki-page a.wk-step:hover,.wiki-page a.wk-step:focus-visible{background:rgba(255,255,255,.14);color:#fff}
+.wk-step svg{flex:none}
+/* The next / previous item, hidden until the arrow is hovered, then it slides open */
+.wk-step-reveal{
+  display:inline-flex;align-items:center;gap:7px;max-width:0;opacity:0;overflow:hidden;white-space:nowrap;
+  color:#e6f0fa;transition:max-width .3s ease,opacity .2s ease,margin .3s ease;
+}
+.wk-step-reveal .wk-icon{width:20px;height:20px}
+.wk-step:hover .wk-step-reveal,.wk-step:focus-visible .wk-step-reveal{max-width:240px;opacity:1}
+.wk-step:hover .wk-step-reveal,.wk-step:focus-visible .wk-step-reveal{margin:0 4px 0 6px}
+@media (prefers-reduced-motion:reduce){.wk-step-reveal{transition:none}}
+.wiki-page .wk-step.off{opacity:.3} /* first / last item: nothing that way */
+.wiki-page a.wk-back{
+  display:inline-block;flex:none;padding:6px 14px;font-size:.9rem;font-weight:600;color:#c9dcf0;text-decoration:none;
+  background:rgba(255,255,255,.06);border:1px solid rgba(190,220,255,.22);border-radius:999px;transition:background .15s,color .15s;
+}
+.wiki-page a.wk-back:hover{background:rgba(255,255,255,.14);color:#fff}
+
+/* Item page header */
+.wk-item-head{display:flex;align-items:center;gap:20px}
+.wk-item-head .wk-big{display:inline-flex;flex:none;padding:16px;border-radius:16px;box-shadow:inset 0 0 0 1px rgba(190,220,255,.2)}
+/* Big icon wobble: --wk-a spins round forever at a steady speed and the icon tilts
+   round in a circle with it, so it never stops. --wk-tilt eases the wobble in and out
+   on hover, so it doesn't snap. Far perspective so a 128px icon doesn't warp. */
+@property --wk-a{syntax:"<angle>";inherits:false;initial-value:0deg}
+@property --wk-tilt{syntax:"<number>";inherits:false;initial-value:0}
+@property --wk-flip{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes wk-spin{to{--wk-a:360deg}}
+.wk-item-head .wk-big-3d{
+  position:relative;display:block;width:128px;height:128px;transform-style:preserve-3d;
+  transition:scale .3s ease,translate .3s ease,--wk-tilt .4s ease;
+  animation:wk-spin 4s linear infinite;
+  transform:perspective(800px) rotateY(var(--wk-flip))
+    rotateX(calc(var(--wk-tilt) * 10deg * cos(var(--wk-a))))
+    rotateY(calc(var(--wk-tilt) * 18deg * sin(var(--wk-a))))
+    rotate(calc(var(--wk-tilt) * -5deg * sin(var(--wk-a))));
+}
+.wk-item-head .wk-big-3d .wk-icon{position:absolute;inset:0}
+/* the thickness layers: each one 1px further back, shaded darker like the item's sides */
+.wk-item-head .wk-layer{transform:translateZ(calc(var(--z) * -1px));filter:brightness(.55)}
+.wk-item-head .wk-layer.wk-back{filter:none}
+/* --wk-flip: the quick 360 spins randomSpins() (wiki.js) plays while it's hovered */
+.wk-item-head .wk-big:hover .wk-big-3d{scale:1.15;translate:0 -4px;--wk-tilt:1}
+@media (prefers-reduced-motion:reduce){.wk-item-head .wk-big:hover .wk-big-3d{--wk-tilt:0}}
+.wk-item-head h1{font-size:clamp(1.8rem,5vw,2.5rem)}
+.wiki-page .wk-id{margin-top:2px;color:#7fa3c8;font-size:.85rem}
+.wiki-page .wk-badges{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+
+/* ---------- Recipes (Minecraft-style) ---------- */
+.wk-recipes{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px}
+.wk-recipe{padding:14px;background:#c6c6c6;border-radius:6px;box-shadow:inset 2px 2px 0 #fff,inset -2px -2px 0 #555;color:#3f3f3f}
+.wk-recipe-label{font-size:.8rem;font-weight:600;margin-bottom:8px}
+.wk-recipe-body{display:flex;align-items:center;gap:12px}
+.wk-in{display:grid;grid-template-columns:repeat(3,40px);gap:2px}
+.wk-recipe.cook .wk-in{grid-template-columns:40px}
+.wk-arrow{font-size:1.6rem;color:#8b8b8b;line-height:1}
+.wk-slot{
+  position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+  background:#8b8b8b;box-shadow:inset 2px 2px 0 #373737,inset -2px -2px 0 #fff;text-decoration:none;
+}
+.wk-out .wk-slot{width:52px;height:52px}
+a.wk-slot[href]:hover{background:#a5a5a5}
+/* Item counts, drawn with Minecraft's font texture (ascii.png: 16x16 grid of 8px glyphs,
+   digits on row 3, each 5px wide + 1px gap). --px is the size of one font pixel. */
+.wk-count{
+  --px:2px;position:absolute;right:calc(var(--px) * 0.5);bottom:calc(var(--px) * 0.5);display:flex;
+  filter:drop-shadow(var(--px) var(--px) 0 #3f3f3f); /* Minecraft's text shadow */
+}
+.wk-count i{
+  display:block;width:calc(6 * var(--px));height:calc(8 * var(--px));
+  background:url(/mods/starcatcher/wiki/data/icons/font/ascii.png) no-repeat;
+  background-size:calc(128 * var(--px)) calc(128 * var(--px));
+  background-position:calc(var(--g) * -8 * var(--px)) calc(-24 * var(--px));
+  image-rendering:pixelated;
+}
+.wk-count i:last-child{width:calc(5 * var(--px))} /* no gap after the last digit */
+
+/* Recipe slot tooltip: follows the cursor, styled like Minecraft's item tooltips */
+.wk-tooltip{
+  position:fixed;z-index:1000;pointer-events:none;max-width:280px;padding:5px 9px 6px;
+  /* dark fill inside, Minecraft's purple gradient as the (rounded) border, dark outer ring */
+  border:2px solid transparent;border-radius:7px;
+  background:linear-gradient(rgba(16,0,16,.94),rgba(16,0,16,.94)) padding-box,
+             linear-gradient(#3a0091,#1d0045) border-box;
+  box-shadow:0 0 0 2px rgba(16,0,16,.94);
+  font-size:.9rem;line-height:1.35;color:#fff;
+}
+.wk-tooltip[hidden]{display:none}
+.wk-tip-line{color:#aaa}
+.wk-tag{position:absolute;left:3px;top:0;font-size:.65rem;font-weight:700;color:#fff;text-shadow:1px 1px 0 #3f3f3f}
+
+/* ---------- All Items page ---------- */
+.wk-filter-text{margin-top:16px;max-width:360px}
+.wk-filters{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 16px}
+.wk-filters button{
+  padding:5px 12px;font:inherit;font-size:.85rem;font-weight:500;color:#c9dcf0;cursor:pointer;
+  background:rgba(255,255,255,.06);border:1px solid rgba(190,220,255,.22);border-radius:999px;transition:background .15s;
+}
+.wk-filters button:hover{background:rgba(255,255,255,.14);color:#fff}
+.wk-filters button.on{background:var(--accent);border-color:var(--accent);color:#0a2542}
+
+/* Phones: sidebar becomes a "Pages" dropdown above the article */
+@media (max-width:800px){
+  .wiki{grid-template-columns:1fr;gap:16px;padding-top:20px}
+  .wiki-nav{position:static;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:12px 16px}
+  .wiki-title{margin:0}
+  .wiki-toggle{
+    display:block;padding:6px 14px;font:inherit;font-weight:600;color:#fff;cursor:pointer;
+    background:rgba(255,255,255,.08);border:1px solid rgba(190,220,255,.28);border-radius:999px;
+  }
+  .wiki-search{width:100%;margin-bottom:0}
+  .wiki-links{display:none;width:100%;padding:0 10px}
+  .wk-in{grid-template-columns:repeat(3,34px)}
+  .wk-slot{width:34px;height:34px}
+  .wk-slot .wk-icon{margin:-11px;scale:.5417}              /* rests at 26px */
+  .wk-count{--px:1.5px}
+  .wk-grid{grid-template-columns:repeat(auto-fill,minmax(105px,1fr))}
+  .wiki-nav.open .wiki-links{display:block}
+  .wiki-page{padding:22px 20px}
+}

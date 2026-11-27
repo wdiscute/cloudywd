@@ -3,3 +3,6 @@ node_modules/
 
 # Wrangler's local cache
 .wrangler/
+
+# Vanilla assets extracted by tools/build-wiki-data.mjs
+tools/.cache/

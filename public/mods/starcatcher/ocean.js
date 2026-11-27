@@ -161,18 +161,18 @@
     kelps = [];
     var rand = seeded(state.seed);
     var spots = Math.max(4, Math.round(window.innerWidth / 48));
-    var maxFit = Math.max(3, Math.floor(window.innerHeight * 0.6 / S));
 
     for (var i = 0; i < spots; i++) {
       // always take the same number of random values per spot
-      var a = rand(), b = rand(), c = rand(), d = rand(), e = rand(), f = rand();
+      var a = rand(), b = rand(), c = rand(), d = rand(), e = rand(), f = rand(), g = rand();
       var plant = document.createElement("div");
       plant.className = "sc-plant";
       plant.style.left = "calc(" + ((i + 0.2 + a * 0.6) / spots * 100) + "% - " + (S / 2) + "px)";
 
       if (b < 0.45) {
-        var start = Math.min(maxFit, e < 0.5 ? 1 + Math.floor(f * 4) : 1); // about half start 1-4 tall
-        var max = maxFit;
+        // max height: 65-95% of window height
+        var max = Math.max(1, Math.round(window.innerHeight * (0.65 + g * 0.3) / S));
+        var start = Math.min(max, e < 0.5 ? 1 + Math.floor(f * 4) : 1); // about half start 1-4 tall
         var k = {
           el: plant,
           interval: GROW_MIN + c * (GROW_MAX - GROW_MIN),
@@ -232,21 +232,4 @@
   });
 
   build();
-
-  // ---- TEST ONLY: reset growth button (delete this block when done) -------
-
-  var resetBtn = document.createElement("button");
-  resetBtn.type = "button";
-  resetBtn.setAttribute("aria-label", "Reset kelp");
-  resetBtn.title = "Reset kelp";
-  resetBtn.style.cssText =
-    "position:fixed;left:12px;bottom:12px;z-index:50;width:28px;height:28px;padding:0;" +
-    "background:rgba(10,37,66,.85);border:1px solid rgba(190,220,255,.35);" +
-    "border-radius:8px;cursor:pointer";
-  resetBtn.addEventListener("click", function () {
-    state = fresh();
-    save();
-    build();
-  });
-  document.body.appendChild(resetBtn);
 })();

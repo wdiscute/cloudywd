@@ -57,6 +57,9 @@ body {
 
 .site {
     flex: none;
+    /* Keeps the header (and its "More" dropdown) above the page content. */
+    position: relative;
+    z-index: 1000;
     /* Captured on its own during the page-to-page fade, so it stays still
        while only the content below fades. */
     view-transition-name: site-header;
@@ -117,6 +120,20 @@ body {
 
 .site .root:hover {
     color: #bfe0ff;
+}
+
+.site .wip {
+    margin-right: -6px;
+    position: relative;
+    top: 1px;
+    padding: 4px 7px 2px;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: #ffd27c;
+    border: 1px solid rgba(255,210,124,.5);
+    border-radius: 6px;
+    line-height: 1;
 }
 
 .site .sep {
@@ -325,6 +342,7 @@ body {
 
   header.innerHTML =
     '<div class="in">' +
+      '<span class="wip">WIP</span>' +
       '<a class="root" href="/">cloudywd</a>' +
       '<span class="sep" aria-hidden="true">|</span>' +
       '<a class="area" href="/mods/">Mods</a>' +

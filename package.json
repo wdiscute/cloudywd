@@ -2,7 +2,8 @@
   "name": "cloudywd",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev"
+    "dev": "wrangler dev",
+    "wiki-data": "node tools/build-wiki-data.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.168.0"
