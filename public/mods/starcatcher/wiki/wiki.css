@@ -49,6 +49,12 @@
 .wiki-page pre{padding:14px 16px;border-radius:10px;background:rgba(0,0,0,.3);overflow-x:auto}
 .wiki-page pre code{padding:0;background:none}
 .wiki-page blockquote{padding:10px 16px;border-left:3px solid var(--focus);background:rgba(124,196,255,.08);border-radius:0 10px 10px 0}
+/* Warning box for articles: <div class="wk-warn">...</div> (links inside need <a href>) */
+.wiki-page .wk-warn{margin-top:12px;padding:10px 16px 10px 44px;position:relative;border:1px solid rgba(245,198,75,.35);border-left:3px solid #f5c64b;
+  background:rgba(245,198,75,.08);border-radius:0 10px 10px 0;color:#f3e6c4}
+.wiki-page .wk-warn::before{content:"!";position:absolute;left:14px;top:15px;width:18px;height:18px;border-radius:50%;background:#f5c64b;color:#1a1300;
+  font-size:.8rem;font-weight:800;line-height:18px;text-align:center}
+.wiki-page .wk-warn a{color:#ffd970}
 /* Article tables: same look as the item page tables (wk-where / wk-chances) */
 .wiki-page table{display:table;width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;
   background:rgba(255,255,255,.05);border:1px solid rgba(190,220,255,.15);border-radius:10px;overflow:hidden}
@@ -82,6 +88,10 @@
 }
 .wiki-results a{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;color:#d7e6f5;text-decoration:none}
 .wiki-results a:hover,.wiki-results a.sel{background:rgba(255,255,255,.1);color:#fff}
+/* Text matches: title on top, a snippet of the text around the match below */
+.wk-hit{display:flex;flex-direction:column;min-width:0}
+.wk-hit-snip{font-size:.8rem;line-height:1.35;color:#9fbad6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wk-hit-snip b{color:#fff;font-weight:600}
 
 /* ---------- Item icons ---------- */
 /* background-size 100% auto + top: shows the first frame of animated (tall strip) textures */
@@ -125,6 +135,8 @@
 .wiki-page a.wk-chip{color:#fff}
 .wiki-page a.wk-chip:hover{background:rgba(255,255,255,.16)}
 .wk-chip .wk-icon{width:20px;height:20px}
+/* Golden version of an icon (e.g. golden worms): a gold colour filter over its texture */
+.wk-icon.wk-gold-tint{filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.15)}
 /* In running text, nudge the chip up so its name lines up with the words around it
    (vertical-align:middle alone leaves it ~2px low). Not in table cells, where it's centred. */
 .wiki-page p .wk-chip,.wiki-page li .wk-chip{position:relative;top:-.13em}
@@ -349,6 +361,8 @@ a.wk-slot[href]:hover{background:#a5a5a5}
 }
 .wk-tooltip[hidden]{display:none}
 .wk-tip-line{color:#aaa}
+/* A game term with an explanation on hover (TERMS in wiki.js) */
+.wk-term{text-decoration:underline dotted rgba(215,230,245,.6);text-underline-offset:3px;cursor:help}
 .wk-tag{position:absolute;left:3px;top:0;font-size:.65rem;font-weight:700;color:#fff;text-shadow:1px 1px 0 #3f3f3f}
 
 /* ---------- All Items page ---------- */

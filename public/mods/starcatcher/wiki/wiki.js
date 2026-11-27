@@ -10,6 +10,7 @@
  *
  * Inside a .md file you can write:
  *   [Star Rods](star-rods)          link to another article (just the slug)
+ *   [Worms](baits/worms)            link to a heading in an article (slug/heading in lowercase-with-dashes)
  *   {{item clear_bobber}}           item icon + name, links to its item page
  *   {{recipe clear_bobber}}         every recipe that makes the item (own line)
  *   {{items #starcatcher:hooks}}    grid of every item in a tag (own line)
@@ -343,6 +344,13 @@
   document.body.appendChild(tip);
   var tipFor = null;
   function showTip(el) {
+    if (el.classList.contains("wk-term")) { // a game term (see TERMS)
+      var t = TERMS[el.getAttribute("data-term")];
+      tip.innerHTML = '<div class="wk-tip-name">' + esc(t.name) + '</div><div class="wk-tip-line">' + esc(t.text) + "</div>";
+      tip.hidden = false;
+      tipFor = el;
+      return;
+    }
     var id = el.getAttribute("data-item"), tag = el.getAttribute("data-tag");
     var r = rarityOf(id);
     tip.innerHTML = '<div class="wk-tip-name' + (r ? " wk-desc-" + r.id : "") + '">' + esc(itemName(id)) + "</div>" +
@@ -358,7 +366,7 @@
     tip.style.top = Math.max(4, Math.min(y, innerHeight - h - 4)) + "px";
   }
   page.addEventListener("mouseover", function (e) {
-    var el = e.target.closest(".wk-slot[data-item]");
+    var el = e.target.closest(".wk-slot[data-item], .wk-term");
     if (el && el !== tipFor) showTip(el);
     if (el) moveTip(e);
   });
@@ -367,6 +375,34 @@
     if (tipFor && !(e.relatedTarget && tipFor.contains(e.relatedTarget))) { tip.hidden = true; tipFor = null; }
   });
   window.addEventListener("hashchange", function () { tip.hidden = true; tipFor = null; });
+
+  /* ---------------- game terms ----------------
+   * Wherever a page mentions one of these, it gets a dotted underline and the
+   * tooltip above explains it. "match" finds it in the text (any capitalisation). */
+  var TERMS = {
+    perfect: { name: "Perfect Catch", match: /perfect catch(es)?/gi,
+               text: "Completing the minigame without missing a single time." }
+  };
+  function markTerms(root) {
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (n) { // not inside links, headings, code or an already marked term
+        return n.parentNode.closest("a, h1, h2, h3, code, .wk-term, .wk-tooltip") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (n) {
+      Object.keys(TERMS).forEach(function (key) {
+        var re = TERMS[key].match;
+        if (!n.parentNode || !re.test(n.nodeValue)) return;
+        re.lastIndex = 0;
+        var span = document.createElement("span");
+        span.innerHTML = esc(n.nodeValue).replace(re, function (m) { return '<span class="wk-term" data-term="' + key + '">' + m + "</span>"; });
+        while (span.firstChild) n.parentNode.insertBefore(span.firstChild, n);
+        n.parentNode.removeChild(n);
+      });
+    });
+  }
 
   /* ---------------- {{ }} tags in markdown ---------------- */
   // {{recipe}} and {{items}} make blocks. Several of them on one line sit side by side.
@@ -399,24 +435,32 @@
     page.classList.remove("loading");
     scroller.scrollTop = 0;
     hydrate(page);
+    markTerms(page);
   }
 
   // Links like [text](some-slug) become wiki links (#some-slug)
   function fixLinks() {
     page.querySelectorAll("a[href]").forEach(function (a) {
       var href = a.getAttribute("href");
-      if (/^[a-z0-9-]+$/i.test(href)) a.setAttribute("href", "#" + href);
+      if (/^[a-z0-9-]+(\/[a-z0-9-]+)?$/i.test(href)) a.setAttribute("href", "#" + href); // also slug/section
       else if (/^https?:/i.test(href)) { a.target = "_blank"; a.rel = "noopener"; }
     });
   }
 
-  function showArticle(info) {
+  // Headings get ids from their text ("Worms" -> "worms", "Ground & Decorations" ->
+  // "ground-decorations"), so [text](baits/worms) links straight to a section.
+  function headingId(text) { return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+
+  function showArticle(info, section) {
     page.classList.add("loading");
     fetch(BASE + "pages/" + info.slug + ".md")
       .then(function (r) { if (!r.ok) throw 0; return r.text(); })
       .then(function (md) {
         setPage(marked.parse(expandTags(md)), info.title);
+        page.querySelectorAll("h2, h3").forEach(function (h) { h.id = headingId(h.textContent); });
         fixLinks();
+        var target = section && document.getElementById(section);
+        if (target) scroller.scrollTop += target.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 16;
       })
       .catch(notFound);
   }
@@ -670,6 +714,9 @@
   function route() {
     leaveAllItems();
     var slug = decodeURIComponent(location.hash.slice(1)) || DEFAULT;
+    // #baits/worms opens the Baits article at its "Worms" heading
+    var section = slug.indexOf("items/") !== 0 && slug.indexOf("item/") !== 0 && slug.indexOf("/") > 0 ? slug.slice(slug.indexOf("/") + 1) : null;
+    if (section) slug = slug.slice(0, slug.indexOf("/"));
     if (slug.indexOf("item/") !== 0) {
       var from = findPage(slug);
       backTo = from && slug !== "items" ? { slug: slug, title: from.title } : { slug: "items", title: "All Items" };
@@ -688,26 +735,105 @@
     if (slug.indexOf("items/") === 0) return showAllItems(slug.slice(6)); // #items/rare jumps to a section
     var info = findPage(slug);
     if (!info) return notFound();
-    showArticle(info);
+    showArticle(info, section);
   }
 
-  /* ---------------- search ---------------- */
+  /* ---------------- search ----------------
+   * Matches page titles and item names first, then the text of every article
+   * (each heading's section on its own, so a result opens at that heading) and
+   * item descriptions / modifiers. The articles are fetched once, the first time
+   * the search box is used. */
+  var TEXT = null, textLoading = false; // TEXT: [{ slug, title, sections: [{ id, heading, text }] }]
+
+  // Markdown -> plain text, with {{item x}} / {{items ...}} turned into item names
+  function plainText(md) {
+    return md
+      .replace(/\{\{\s*recipe\s+[^}]*\}\}/g, "")
+      .replace(/\{\{\s*items?\s+([^}]+?)\s*\}\}/g, function (all, arg) {
+        var ids = arg.charAt(0) === "#" ? (TAGS[arg.slice(1)] || []) : arg.split(/\s+/).map(fullId);
+        return ids.filter(function (i) { return ITEMS[i]; }).map(itemName).join(", ");
+      })
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, "")        // images
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")     // links -> their text
+      .replace(/<[^>]+>/g, " ")                     // html tags
+      .replace(/^\s*\|?[-:| ]+\|\s*$/gm, "")        // table divider rows
+      .replace(/[*_`|>]/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/\s+/g, " ").trim();
+  }
+  function loadText() {
+    if (TEXT || textLoading) return;
+    textLoading = true;
+    var list = [];
+    PAGES.forEach(function (g) { g.pages.forEach(function (p) { if (p.slug !== "items") list.push(p); }); });
+    Promise.all(list.map(function (p) {
+      return fetch(BASE + "pages/" + p.slug + ".md").then(function (r) { return r.ok ? r.text() : ""; }).catch(function () { return ""; })
+        .then(function (md) {
+          // split at ## / ### headings; the part before the first one is the intro
+          var sections = [], cur = { id: "", heading: "", lines: [] };
+          md.split("\n").forEach(function (line) {
+            var h = line.match(/^#{2,3}\s+(.+)/);
+            if (h) { sections.push(cur); cur = { id: headingId(h[1]), heading: h[1].trim(), lines: [] }; }
+            else if (!/^#\s/.test(line)) cur.lines.push(line);
+          });
+          sections.push(cur);
+          return { slug: p.slug, title: p.title, sections: sections.map(function (s) {
+            return { id: s.id, heading: s.heading, text: plainText(s.lines.join("\n")) };
+          }).filter(function (s) { return s.text; }) };
+        });
+    })).then(function (pages) {
+      TEXT = pages;
+      if (search.value.trim()) runSearch(); // show text results for what's already typed
+    });
+  }
+  // A short piece of text around the match, with the match in bold
+  function snippet(text, at, len) {
+    var start = Math.max(0, at - 40), end = Math.min(text.length, at + len + 60);
+    return (start > 0 ? "…" : "") + esc(text.slice(start, at)) + "<b>" + esc(text.slice(at, at + len)) + "</b>" +
+      esc(text.slice(at + len, end)) + (end < text.length ? "…" : "");
+  }
+  function textHit(title, snip, href, iconHtml, s) {
+    return { s: s, href: href, html: iconHtml + '<span class="wk-hit"><span>' + esc(title) + '</span><span class="wk-hit-snip">' + snip + "</span></span>" };
+  }
+
   var hits = [], sel = 0;
   function runSearch() {
+    loadText();
     var q = search.value.trim().toLowerCase();
     hits = [];
     if (q) {
       var score = function (name) { var i = name.toLowerCase().indexOf(q); return i < 0 ? -1 : i === 0 ? 0 : 1; };
+      var named = {}; // pages and items already listed by name aren't repeated as text matches
       PAGES.forEach(function (g) { g.pages.forEach(function (p) {
-        var s = score(p.title); if (s >= 0) hits.push({ s: s, href: "#" + p.slug, html: '<span class="wk-icon none">&#128196;</span><span>' + esc(p.title) + "</span>" });
+        var s = score(p.title);
+        if (s >= 0) { named[p.slug] = true; hits.push({ s: s, href: "#" + p.slug, html: '<span class="wk-icon none">&#128196;</span><span>' + esc(p.title) + "</span>" }); }
       }); });
       Object.keys(ITEMS).forEach(function (id) {
         if (id.indexOf(NS + ":") !== 0) return;
         var s = score(ITEMS[id].name);
-        if (s >= 0) hits.push({ s: s + 0.5, href: itemHref(id), html: icon(id) + "<span>" + esc(ITEMS[id].name) + "</span>" });
+        if (s >= 0) { named[id] = true; hits.push({ s: s + 0.5, href: itemHref(id), html: icon(id) + "<span>" + esc(ITEMS[id].name) + "</span>" }); }
+      });
+      // Article text: the first matching section of each page
+      (TEXT || []).forEach(function (p) {
+        if (named[p.slug]) return;
+        for (var i = 0; i < p.sections.length; i++) {
+          var sec = p.sections[i], at = sec.text.toLowerCase().indexOf(q);
+          if (at < 0) continue;
+          hits.push(textHit(p.title + (sec.heading ? " › " + sec.heading : ""), snippet(sec.text, at, q.length),
+            "#" + p.slug + (sec.id ? "/" + sec.id : ""), '<span class="wk-icon none">&#128196;</span>', 2));
+          break;
+        }
+      });
+      // Item descriptions and modifiers
+      Object.keys(ITEMS).forEach(function (id) {
+        if (id.indexOf(NS + ":") !== 0 || named[id]) return;
+        var it = ITEMS[id];
+        var text = [(it.desc || "").replace(/<\/?sc[a-z]+>/g, "")].concat((it.modifiers || []).map(function (m) { return m.text; })).join(" · ");
+        var at = text.toLowerCase().indexOf(q);
+        if (at >= 0) hits.push(textHit(it.name, snippet(text, at, q.length), itemHref(id), icon(id), 3));
       });
       hits.sort(function (a, b) { return a.s - b.s; });
-      hits = hits.slice(0, 10);
+      hits = hits.slice(0, 12);
     }
     sel = 0;
     drawResults(q);
@@ -735,7 +861,7 @@
   });
   results.addEventListener("click", function (e) { if (e.target.closest("a")) closeSearch(); });
   document.addEventListener("click", function (e) { if (!e.target.closest(".wiki-search")) results.hidden = true; });
-  search.addEventListener("focus", function () { if (search.value) runSearch(); });
+  search.addEventListener("focus", function () { loadText(); if (search.value) runSearch(); });
 
   /* ---------------- start ---------------- */
   // Sidebar

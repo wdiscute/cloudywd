@@ -4,6 +4,8 @@ Have you ever fished so much that you don't know what to do with all the fish yo
 
 Put your fish in a selling bin and you'll get emeralds in exchange. Create the ultimate fish monopoly and control the market with the power of fish.
 
+<div class="wk-warn">The selling bin comes from its own mod, <a href="/mods/wds-selling-bin/">wd's Selling Bin</a>, which is included with Starcatcher. Everything below is Starcatcher's default setup, and it can be customized: what can be sold, what it's worth and what you get paid with.</div>
+
 ## Fish Values
 
 Every fish has a base value depending on its rarity. 100 value is worth one {{item minecraft:emerald}}, and 900 is worth a {{item minecraft:emerald_block}}.

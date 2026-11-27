@@ -21,7 +21,7 @@ Learn more about casting and the minigame in [Fishing Basics](fishing-basics).
 | {{item heavy_hook}} | Moving sweet-spots move slower. |
 | {{item mossy_hook}} | A perfect catch has a chance to give you treasure. |
 | {{item frozen_hook}} | Stops your handle from freezing up. |
-| {{item rusty_hook}} | Fish are easier to reel in, but missing a sweet-spot costs you more. |
+| {{item rusty_hook}} | Fish are easier to reel in, but it increases the penalty for missing a sweet-spot. |
 | {{item shiny_hook}} | You can't see your catch while fishing, but hitting 3 sweet-spots in a row brings up a treasure chest. |
 | {{item split_hook}} | An extra fish comes up with your catch. |
 | {{item gold_hook}} | A golden fish is more likely to bite. |
