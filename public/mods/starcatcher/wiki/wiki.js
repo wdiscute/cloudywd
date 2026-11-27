@@ -45,6 +45,7 @@
       { slug: "trophies",          title: "Trophies" },
       { slug: "display-blocks",    title: "Display Blocks" },
       { slug: "fish-plaques",      title: "Fish Plaques" },
+      { slug: "messages-in-a-bottle", title: "Messages In A Bottle" },
       { slug: "selling-bin",       title: "Selling Bin" },
       { slug: "tournaments",       title: "Tournaments" }
     ]}
@@ -85,8 +86,38 @@
     { page: "hats",              tags: ["starcatcher:hats"] },
     { page: "tackle-boxes",      tags: ["starcatcher:tackle_boxes"], match: /_tackle_box_boat$/ },
     { page: "fish-plaques",      tags: ["starcatcher:fish_plaques"] },
-    { page: "aquariums",         items: ["starcatcher:aquarium"] }
+    { page: "aquariums",         items: ["starcatcher:aquarium"] },
+    { page: "trophies",          match: /^starcatcher:trophy_/ },
+    { page: "messages-in-a-bottle", items: ["starcatcher:letter", "starcatcher:bottled_letter", "starcatcher:message",
+                                            "starcatcher:message_in_a_bottle", "starcatcher:broken_bottle"] }
   ];
+
+  // Extra "How to get" text written for the wiki, for items the mod's data doesn't explain.
+  // {{item id}} inside the text becomes a clickable item, like in the pages.
+  var OBTAIN = {
+    "starcatcher:starcaught_bucket": "Using a bucket as a bait will give you this item, containing the fish caught.",
+    "starcatcher:message_in_a_bottle": "Fished up when another player throws a {{item bottled_letter}} into the sea, or from one of the secret messages in a bottle built into Starcatcher.",
+    "starcatcher:message": "Obtained by breaking open a {{item message_in_a_bottle}}.",
+    "starcatcher:broken_bottle": "Obtained when you break open a {{item message_in_a_bottle}} by throwing it. It can be thrown at entities to damage them."
+  };
+
+  // Related items: each group's item pages show the others under "See also".
+  var RELATED = [
+    ["starcatcher:letter", "starcatcher:bottled_letter", "starcatcher:message", "starcatcher:message_in_a_bottle", "starcatcher:broken_bottle"],
+    ["starcatcher:vanilla_bobber", "starcatcher:vanilla_hook"],
+    ["starcatcher:worm", "starcatcher:almighty_worm", "starcatcher:seeking_worm"],
+    ["starcatcher:copper_hook", "starcatcher:exposed_copper_hook", "starcatcher:weathered_copper_hook", "starcatcher:oxidised_copper_hook"],
+    ["starcatcher:starcaught_fish", "starcatcher:cooked_starcaught_fish"],
+    ["starcatcher:boot", "starcatcher:mossy_boot"],
+    ["starcatcher:clam", "starcatcher:pearl"],
+    ["starcatcher:starcatcher_guide", "starcatcher:display"]
+  ].concat(
+    // each rod with its skin smithing template
+    ["naturalist", "iceborn", "magmaforged", "slimed", "sharktooth", "azure_crystal", "bamboo",
+     "obsidian", "boner", "sky", "lush_glowberry", "humble"].map(function (n) {
+      return ["starcatcher:" + n + "_rod", "starcatcher:" + n + "_skin_smithing_template"];
+    })
+  );
 
   var DEFAULT = "items"; // page shown at /mods/starcatcher/wiki/ with no #page
   var BASE = "/mods/starcatcher/wiki/";
@@ -499,6 +530,7 @@
     else if (it.caught || rarity) html += "<p>Caught by fishing.</p>";
     // it.obtain: other ways to get it (the mod's JEI info pages); it.bonemeal: drop chances
     (it.obtain || []).forEach(function (t) { html += "<p>" + esc(t) + "</p>"; });
+    if (OBTAIN[id]) html += "<p>" + esc(OBTAIN[id]).replace(/\{\{\s*item\s+([^}]+?)\s*\}\}/g, function (all, arg) { return chip(fullId(arg)); }) + "</p>";
     if (it.bonemeal) html += '<table class="wk-chances"><thead><tr><th>Bonemealing</th><th>Chance</th><th>Golden</th></tr></thead><tbody>' +
       it.bonemeal.map(function (r) {
         return "<tr><td>" + esc(r.block) + "</td><td>" + r.chance + '%</td><td class="wk-golden">' + (r.golden ? r.golden + "%" : "–") + "</td></tr>";
@@ -510,7 +542,7 @@
       '<ul class="wk-goals">' + it.rareCatch.where.map(function (w) { return "<li>" + esc(w) + "</li>"; }).join("") + "</ul>";
     if (it.treasureFrom && it.treasureFrom.length) html += "<p>Found as treasure while reeling in " +
       it.treasureFrom.map(chip).join(" or ") + ".</p>";
-    var other = it.trophy || it.caught || rarity || it.obtain || it.rareCatch || (it.treasureFrom && it.treasureFrom.length);
+    var other = it.trophy || it.caught || rarity || it.obtain || OBTAIN[id] || it.rareCatch || (it.treasureFrom && it.treasureFrom.length);
     if (made.length) html += (other ? "<p>It can also be crafted:</p>" : "") + recipesFor(id);
     else if (!other) html += '<p class="wk-empty">This item has no recipe.</p>';
     if (used.length) {
@@ -519,24 +551,40 @@
       used.forEach(function (rc) { var o = rc.result && (rc.result.id || rc.result.item); if (o && outs.indexOf(o) < 0 && o !== id) outs.push(o); });
       html += used.length <= 4 ? '<div class="wk-recipes">' + used.map(recipeHtml).join("") + "</div>" : grid(outs);
     }
+    var related = [];
+    RELATED.forEach(function (g) {
+      if (g.indexOf(id) >= 0) g.forEach(function (o) { if (o !== id && ITEMS[o] && related.indexOf(o) < 0) related.push(o); });
+    });
+    // 1 in 100 page loads it says "Sea also" instead
+    if (related.length) html += "<h2>" + (Math.random() < 0.01 ? "Sea also" : "See also") + "</h2>" + grid(related);
     setPage(html, it.name);
-    randomSpins(page.querySelector(".wk-big"));
   }
 
-  // While the big icon is hovered, every 3-10 seconds (at random) it does a quick 360.
-  function randomSpins(frame) {
-    var el = frame && frame.querySelector(".wk-big-3d");
-    if (!el || !el.animate || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var timer = null, hovering = false;
-    var next = function () { clearTimeout(timer); timer = setTimeout(spin, 3000 + Math.random() * 7000); };
+  // While an item icon is hovered (the big one on item pages, grid cards, recipe slots),
+  // every 3-10 seconds (at random) it does a quick 360. One listener for the whole page.
+  var SPIN_TARGETS = ".wk-big,.wk-card,.wk-slot";
+  function spinTarget(frame) { return frame.querySelector(frame.classList.contains("wk-big") ? ".wk-big-3d" : ".wk-icon"); }
+  function startSpins(frame) {
+    if (frame._spinning || !frame.animate || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    frame._spinning = true;
+    var next = function () { clearTimeout(frame._spinTimer); frame._spinTimer = setTimeout(spin, 3000 + Math.random() * 7000); };
     var spin = function () {
-      if (!hovering) return;
+      var el = spinTarget(frame); // looked up each time: recipe slots that cycle swap their icon
+      if (!frame._spinning || !el) return;
       el.animate([{ "--wk-flip": "0deg" }, { "--wk-flip": "360deg" }],
-        { duration: 800, easing: "cubic-bezier(.4,0,.2,1)" }).onfinish = function () { if (hovering) next(); };
+        { duration: 800, easing: "cubic-bezier(.4,0,.2,1)" }).onfinish = function () { if (frame._spinning) next(); };
     };
-    frame.addEventListener("mouseenter", function () { hovering = true; next(); });
-    frame.addEventListener("mouseleave", function () { hovering = false; clearTimeout(timer); });
+    next();
   }
+  function stopSpins(frame) { frame._spinning = false; clearTimeout(frame._spinTimer); }
+  document.addEventListener("mouseover", function (e) {
+    var f = e.target.closest && e.target.closest(SPIN_TARGETS);
+    if (f && !f.contains(e.relatedTarget)) startSpins(f);
+  });
+  document.addEventListener("mouseout", function (e) {
+    var f = e.target.closest && e.target.closest(SPIN_TARGETS);
+    if (f && !f.contains(e.relatedTarget)) stopSpins(f);
+  });
 
   // All Items: one collapsible section per category. The pills at the top jump
   // to a section; the search box filters. "jump" is a section id to scroll to.

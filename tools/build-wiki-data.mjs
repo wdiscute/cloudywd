@@ -251,7 +251,7 @@ for (const id of ids) if (!/^(minecraft|starcatcher):/.test(id)) ids.delete(id);
 // Internal items that shouldn't appear on the wiki
 const HIDDEN = [
   "missingno", "deep_dark_bobber", "scalding_treasure", "unknown_fish", "waterlogged_bottle",
-  "waterlogged_satchel", "treasure", "secret_note", "settings", "tackle_box"
+  "waterlogged_satchel", "treasure", "secret_note", "settings", "tackle_box", "starcaught_lava_bucket"
 ];
 for (const p of HIDDEN) ids.delete(NS + ":" + p);
 // ...and out of tags too, so recipes that take "any tackle box" don't cycle through them

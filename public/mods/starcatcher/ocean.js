@@ -2,7 +2,7 @@
  * Starcatcher ocean floor
  *
  * Kelp and seagrass along the bottom of the screen, behind everything else.
- * Kelp grows one segment every 40-60 seconds while you're on a Starcatcher page.
+ * Kelp grows one segment every 80-120 seconds while you're on a Starcatcher page.
  * Progress carries over between pages, and starts over if you've been away
  * for more than 10 minutes.
  *
@@ -21,7 +21,7 @@
   var DIR = "/mods/starcatcher/ocean/";
   var PX = 2;                       // screen pixels per texture pixel
   var S = 16 * PX;                  // size of one block on screen
-  var GROW_MIN = 40, GROW_MAX = 60; // seconds per kelp segment
+  var GROW_MIN = 80, GROW_MAX = 120; // seconds per kelp segment
   var RESET_AFTER = 10 * 60 * 1000; // away longer than this = start over
   var KEY = "sc-ocean";
 
@@ -164,14 +164,20 @@
 
     for (var i = 0; i < spots; i++) {
       // always take the same number of random values per spot
-      var a = rand(), b = rand(), c = rand(), d = rand(), e = rand(), f = rand(), g = rand();
+      var a = rand(), b = rand(), c = rand(), d = rand(), e = rand(), f = rand(), g = rand(), h = rand();
       var plant = document.createElement("div");
       plant.className = "sc-plant";
       plant.style.left = "calc(" + ((i + 0.2 + a * 0.6) / spots * 100) + "% - " + (S / 2) + "px)";
 
       if (b < 0.45) {
-        // max height: 65-95% of window height
-        var max = Math.max(1, Math.round(window.innerHeight * (0.65 + g * 0.3) / S));
+        // distance: further kelp is smaller, more see-through, and sits behind the rest
+        var scale = 0.6 + h * 0.4;
+        plant.style.transform = "scale(" + scale + ")";
+        plant.style.transformOrigin = "bottom center";
+        plant.style.opacity = 0.45 + h * 0.55;
+        plant.style.zIndex = Math.round((scale - 1) * 100);
+        // max height: 65-95% of window height (counted in this kelp's smaller blocks)
+        var max = Math.max(1, Math.round(window.innerHeight * (0.65 + g * 0.3) / (S * scale)));
         var start = Math.min(max, e < 0.5 ? 1 + Math.floor(f * 4) : 1); // about half start 1-4 tall
         var k = {
           el: plant,

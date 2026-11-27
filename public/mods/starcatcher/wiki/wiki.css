@@ -91,37 +91,43 @@
 }
 .wk-icon.big{width:40px;height:40px}
 .wk-icon.huge{width:128px;height:128px}
-/* Hovering an item (grid card or recipe slot): it grows, lifts and slowly tilts around,
-   like it's floating towards the screen. Size/lift ease in; the tilt loops.
+/* Hovering an item (grid card or recipe slot): it grows, lifts and tilts round in a
+   smooth loop, with a quick 360 now and then, the same as the big icon on item pages
+   (see "Big icon wobble" below; the spins come from startSpins() in wiki.js).
+   The loop (wk-spin) is paused until hovered, so hundreds of icons cost nothing at rest.
    To keep 16x16 pixel art crisp, these icons are drawn at 48px (exactly 3 screen
    pixels per texture pixel) and shrunk with `scale` to their resting size; hovering
    scales them back up to 1, so the browser never stretches a small blurry copy.
    Negative margins keep the layout at the resting size. */
-.wk-card .wk-icon,.wk-slot .wk-icon{width:48px;height:48px;transition:scale .3s ease,translate .3s ease}
+.wk-card .wk-icon,.wk-slot .wk-icon{width:48px;height:48px;
+  transition:scale .3s ease,translate .3s ease,--wk-tilt .4s ease;
+  animation:wk-spin 4s linear infinite paused;
+  transform:perspective(300px) rotateY(var(--wk-flip))
+    rotateX(calc(var(--wk-tilt) * 10deg * cos(var(--wk-a))))
+    rotateY(calc(var(--wk-tilt) * 18deg * sin(var(--wk-a))))
+    rotate(calc(var(--wk-tilt) * -5deg * sin(var(--wk-a))));
+}
 .wk-card .wk-icon{margin:-4px;scale:.8334}                 /* rests at 40px */
 .wk-slot .wk-icon{margin:-8px;scale:.6667}                 /* rests at 32px */
 .wk-out .wk-slot .wk-icon{margin:-4px;scale:.8334}         /* rests at 40px */
 .wk-card:hover .wk-icon,.wk-slot:hover .wk-icon{
   position:relative;z-index:1;scale:1;translate:0 -4px;
-  animation:wk-float 3s ease-in-out infinite;
+  --wk-tilt:1;animation-play-state:running;
 }
-@keyframes wk-float{
-  0%,100%{transform:perspective(200px) rotateX(0) rotateY(0) rotate(0)}
-  25%{transform:perspective(200px) rotateX(8deg) rotateY(14deg) rotate(-4deg)}
-  50%{transform:perspective(200px) rotateX(-6deg) rotateY(0) rotate(0)}
-  75%{transform:perspective(200px) rotateX(8deg) rotateY(-14deg) rotate(4deg)}
-}
-@media (prefers-reduced-motion:reduce){.wk-card:hover .wk-icon,.wk-slot:hover .wk-icon{animation:none}}
+@media (prefers-reduced-motion:reduce){.wk-card:hover .wk-icon,.wk-slot:hover .wk-icon{--wk-tilt:0}}
 
 /* 3D renders are already high-res: scale them smoothly */
 .wk-icon.r3d{image-rendering:auto;background-size:contain;background-position:center}
 .wk-icon.none{background:rgba(255,255,255,.1);border-radius:6px;font-size:.8em;font-weight:700;color:#a9c3de}
 
 /* Inline item: {{item ...}} */
-.wk-chip{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;padding:1px 8px 1px 3px;border-radius:8px;background:rgba(255,255,255,.08);text-decoration:none;font-weight:500}
+.wk-chip{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;padding:1px 8px 1px 6px;border-radius:8px;background:rgba(255,255,255,.08);text-decoration:none;font-weight:500}
 .wiki-page a.wk-chip{color:#fff}
 .wiki-page a.wk-chip:hover{background:rgba(255,255,255,.16)}
 .wk-chip .wk-icon{width:20px;height:20px}
+/* In running text, nudge the chip up so its name lines up with the words around it
+   (vertical-align:middle alone leaves it ~2px low). Not in table cells, where it's centred. */
+.wiki-page p .wk-chip,.wiki-page li .wk-chip{position:relative;top:-.13em}
 
 /* Item grid: {{items ...}}, All Items page */
 .wk-block{margin-top:14px}
@@ -295,7 +301,7 @@ a.wk-card:hover{background:rgba(255,255,255,.12);border-color:rgba(210,232,255,.
 /* the thickness layers: each one 1px further back, shaded darker like the item's sides */
 .wk-item-head .wk-layer{transform:translateZ(calc(var(--z) * -1px));filter:brightness(.55)}
 .wk-item-head .wk-layer.wk-back{filter:none}
-/* --wk-flip: the quick 360 spins randomSpins() (wiki.js) plays while it's hovered */
+/* --wk-flip: the quick 360 spins startSpins() (wiki.js) plays while it's hovered */
 .wk-item-head .wk-big:hover .wk-big-3d{scale:1.15;translate:0 -4px;--wk-tilt:1}
 @media (prefers-reduced-motion:reduce){.wk-item-head .wk-big:hover .wk-big-3d{--wk-tilt:0}}
 .wk-item-head h1{font-size:clamp(1.8rem,5vw,2.5rem)}
