@@ -2,6 +2,14 @@ export default {
     async fetch(request, env) {
         const url = new URL(request.url);
 
+        // The homepage redirects to the mods page
+        if (url.pathname === "/") {
+            return Response.redirect(
+                new URL("/mods/", request.url),
+                302
+            );
+        }
+
         // Try to serve the requested static file
         const response = await env.ASSETS.fetch(request);
 

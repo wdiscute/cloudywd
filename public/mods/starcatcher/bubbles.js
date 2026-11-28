@@ -19,7 +19,7 @@
     " X...X ",
     "  XXX  "
   ];
-  var COLORS = { "X": "#6fb8ff", "H": "#ffffff", ".": "rgba(90,165,255,0.4)" };
+  var COLORS = { "X": "#3f7fb8", "H": "#a9d2f0", ".": "rgba(45,105,170,0.35)" };
 
   var rects = "";
   ART.forEach(function (row, y) {

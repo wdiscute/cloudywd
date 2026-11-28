@@ -16,21 +16,63 @@
 body{
   color:#ece4fa;
   background:
-    radial-gradient(1.5px 1.5px at 12% 14%,rgba(255,255,255,.75),transparent 60%),
-    radial-gradient(1px 1px at 24% 58%,rgba(255,255,255,.5),transparent 60%),
-    radial-gradient(1.5px 1.5px at 37% 26%,rgba(255,255,255,.6),transparent 60%),
-    radial-gradient(1px 1px at 49% 8%,rgba(255,255,255,.55),transparent 60%),
-    radial-gradient(1px 1px at 58% 78%,rgba(255,255,255,.4),transparent 60%),
-    radial-gradient(1.5px 1.5px at 69% 18%,rgba(255,255,255,.7),transparent 60%),
-    radial-gradient(1px 1px at 82% 44%,rgba(255,255,255,.5),transparent 60%),
-    radial-gradient(1.5px 1.5px at 91% 70%,rgba(255,255,255,.55),transparent 60%),
-    radial-gradient(1px 1px at 7% 84%,rgba(255,255,255,.4),transparent 60%),
-    radial-gradient(1px 1px at 76% 92%,rgba(255,255,255,.35),transparent 60%),
-    radial-gradient(60% 40% at 30% 0%,rgba(190,140,255,.28),transparent 70%),
-    radial-gradient(45% 35% at 80% 8%,rgba(170,120,240,.16),transparent 70%),
-    linear-gradient(180deg,#5a3590 0,#3b2163 30%,#1c1033 65%,#08060d 100%);
+    radial-gradient(4px 4px at 12% 14%,rgba(255,255,255,.75),transparent 100%),
+    radial-gradient(3px 3px at 24% 58%,rgba(255,255,255,.5),transparent 100%),
+    radial-gradient(4px 4px at 37% 26%,rgba(255,255,255,.6),transparent 100%),
+    radial-gradient(3px 3px at 49% 8%,rgba(255,255,255,.55),transparent 100%),
+    radial-gradient(3px 3px at 58% 78%,rgba(255,255,255,.4),transparent 100%),
+    radial-gradient(4px 4px at 69% 18%,rgba(255,255,255,.7),transparent 100%),
+    radial-gradient(3px 3px at 82% 44%,rgba(255,255,255,.5),transparent 100%),
+    radial-gradient(4px 4px at 91% 70%,rgba(255,255,255,.55),transparent 100%),
+    radial-gradient(3px 3px at 7% 84%,rgba(255,255,255,.4),transparent 100%),
+    radial-gradient(3px 3px at 76% 92%,rgba(255,255,255,.35),transparent 100%),
+    radial-gradient(3px 3px at 4% 32%,rgba(255,255,255,.5),transparent 100%),
+    radial-gradient(4px 4px at 18% 46%,rgba(255,255,255,.6),transparent 100%),
+    radial-gradient(3px 3px at 31% 72%,rgba(255,255,255,.45),transparent 100%),
+    radial-gradient(5px 5px at 44% 52%,rgba(235,220,255,.7),transparent 100%),
+    radial-gradient(3px 3px at 53% 34%,rgba(255,255,255,.5),transparent 100%),
+    radial-gradient(4px 4px at 63% 62%,rgba(255,255,255,.55),transparent 100%),
+    radial-gradient(3px 3px at 74% 30%,rgba(255,255,255,.45),transparent 100%),
+    radial-gradient(3px 3px at 88% 22%,rgba(255,255,255,.6),transparent 100%),
+    radial-gradient(5px 5px at 96% 40%,rgba(235,220,255,.65),transparent 100%),
+    radial-gradient(3px 3px at 15% 70%,rgba(255,255,255,.4),transparent 100%),
+    radial-gradient(4px 4px at 34% 90%,rgba(255,255,255,.45),transparent 100%),
+    radial-gradient(3px 3px at 47% 96%,rgba(255,255,255,.35),transparent 100%),
+    radial-gradient(3px 3px at 66% 4%,rgba(255,255,255,.6),transparent 100%),
+    radial-gradient(4px 4px at 85% 86%,rgba(255,255,255,.45),transparent 100%),
+    radial-gradient(3px 3px at 2% 6%,rgba(255,255,255,.55),transparent 100%),
+    radial-gradient(3px 3px at 98% 96%,rgba(255,255,255,.35),transparent 100%),
+    /* darker sky curving in at the top right */
+    radial-gradient(75% 55% at 100% 0%,rgba(20,10,36,.7),transparent 70%),
+    /* tone down the bright streak on the left edge */
+    linear-gradient(90deg,rgba(28,14,50,.45) 0,rgba(28,14,50,.2) 12%,transparent 26%),
+    linear-gradient(180deg,#2a1848 0,#4a2c7a 28%,#6a45a2 55%,#5b3b90 80%,#3a2463 100%);
   background-attachment:fixed;
 }
+/* vertical streaks: light and dark bands drifting slowly sideways (the noise tiles seamlessly,
+   so the loop has no jump). Two copies at different widths and speeds overlap, and each one's
+   vertical fade grows and shrinks on its own timer, so the streaks' heights keep changing. */
+body{--streaks:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800' preserveAspectRatio='none'%3E%3Cfilter id='l' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0025 0' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.8 0 0 0 0 0.66 0 0 0 0 1 0.6 0 0 0 -0.28'/%3E%3C/filter%3E%3Cfilter id='d' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.04 0 0 0 0 0.16 1.2 0 0 0 -0.55'/%3E%3C/filter%3E%3Crect width='1200' height='800' filter='url(%23d)'/%3E%3Crect width='1200' height='800' filter='url(%23l)'/%3E%3C/svg%3E")}
+body::before,body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 50%,transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 50%,transparent 100%);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center;
+}
+body::before{
+  background:var(--streaks) 0 0/1600px 100% repeat-x;
+  animation:te-drift-a 200s linear infinite,te-height-a 23s ease-in-out infinite alternate;
+}
+body::after{
+  background:var(--streaks) 0 0/1100px 100% repeat-x;opacity:.7;
+  animation:te-drift-b 260s linear infinite,te-height-b 31s ease-in-out infinite alternate;
+}
+@keyframes te-drift-a{to{background-position:1600px 0}}
+@keyframes te-drift-b{to{background-position:-1100px 0}}
+@keyframes te-height-a{from{-webkit-mask-size:100% 60%;mask-size:100% 60%}to{-webkit-mask-size:100% 150%;mask-size:100% 150%}}
+@keyframes te-height-b{from{-webkit-mask-size:100% 130%;mask-size:100% 130%}to{-webkit-mask-size:100% 50%;mask-size:100% 50%}}
+@media (prefers-reduced-motion:reduce){body::before,body::after{animation:none}}
 h1{background:linear-gradient(180deg,#ffffff 0%,#e3d3ff 50%,#a57fe0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(200,160,255,.35))}
 .tag{color:#bfaedb}
 .btn{background:rgba(40,30,60,.35);border-color:rgba(200,170,255,.28)}
